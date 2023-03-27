@@ -8,8 +8,8 @@ export const mapUserDBTypeToViewType = (
   email: user.email,
   createdAt: user.createdAt,
   banInfo: {
-    isBanned: user.isBanned,
-    banDate: user.banDate,
-    banReason: user.banReason,
+    isBanned: user.banInfo.isBanned,
+    banDate: user.banInfo.banDate,
+    banReason: user.banInfo.banReason,
   },
 });

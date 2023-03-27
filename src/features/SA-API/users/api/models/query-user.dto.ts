@@ -3,7 +3,7 @@ export class QueryUserDto {
   pageNumber: string;
   pageSize: string;
   sortBy: string;
-  sortDirection: 'desc' | 'asc';
+  sortDirection: 'DESC' | 'ASC';
   searchLoginTerm: string | null;
   searchEmailTerm: string | null;
 }

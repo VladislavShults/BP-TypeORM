@@ -49,13 +49,11 @@ export type UserSQLType = {
 };
 
 export type UsersJoinBanInfoType = {
-  id: number;
+  id: string;
   login: string;
   email: string;
   createdAt: Date;
-  isBanned: boolean;
-  banReason: string;
-  banDate: Date;
+  banInfo: { isBanned: boolean; banReason: string; banDate: Date };
 };
 
 export type UsersJoinEmailConfirmationType = {

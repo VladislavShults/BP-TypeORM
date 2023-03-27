@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-  UsersJoinBanInfoType,
   UsersJoinEmailConfirmationType,
   ViewUsersTypeWithPagination,
 } from '../types/users.types';
@@ -28,123 +27,49 @@ export class UsersQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
+    const sortDirection: 'ASC' | 'DESC' = query.sortDirection || 'DESC';
     const searchLoginTerm: string | null = query.searchLoginTerm || '';
     const searchEmailTerm: string | null = query.searchEmailTerm || '';
 
-    let itemsDBType: UsersJoinBanInfoType[];
-    let pagesCount: number;
-    let totalCount: number;
-
-    if (banStatus === 'all') {
-      const queryUsers = `
-        SELECT u."UserId" as "id", u."Login" as "login", u."Email" as "email", 
-                u."CreatedAt" as "createdAt", u."IsDeleted" as "isDeleted",
-                b."IsBanned" as "isBanned", b."BanReason" as "banReason", b."BanDate" as "banDate"
-        FROM public."Users" u
-        JOIN public."BanInfo" b
-        ON u."UserId" = b."UserId"
-        WHERE LOWER ("Login") LIKE $1 AND "IsDeleted" = false
-        OR (LOWER ("Email") LIKE $2 AND "IsDeleted" = false)
-        ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
-        LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};
-      `;
-
-      itemsDBType = await this.dataSource.query(queryUsers, [
-        '%' + searchLoginTerm.toLocaleLowerCase() + '%',
-        '%' + searchEmailTerm.toLocaleLowerCase() + '%',
-      ]);
-
-      const queryCount = `SELECT count(*)
-                        FROM public."Users" u
-                        JOIN public."BanInfo" b
-                        ON u."UserId" = b."UserId"
-                        WHERE LOWER ("Login") LIKE $1 AND "IsDeleted" = false
-                        OR (LOWER ("Email") LIKE $2 AND "IsDeleted" = false)`;
-
-      const totalCountArray = await this.dataSource.query(queryCount, [
-        '%' + searchLoginTerm.toLocaleLowerCase() + '%',
-        '%' + searchEmailTerm.toLocaleLowerCase() + '%',
-      ]);
-
-      totalCount = Number(totalCountArray[0].count);
-
-      pagesCount = Math.ceil(totalCount / pageSize);
-    }
+    let stringWhere =
+      'LOWER(login) like :loginTerm AND "isDeleted" = false OR (Lower(email) like :emailTerm AND "isDeleted" = false)';
 
     if (banStatus === 'banned') {
-      const queryUsers = `
-        SELECT u."UserId" as "id", u."Login" as "login", u."Email" as "email", 
-                u."CreatedAt" as "createdAt", u."IsDeleted" as "isDeleted",
-                b."IsBanned" as "isBanned", b."BanReason" as "banReason", b."BanDate" as "banDate"
-        FROM public."Users" u
-        JOIN public."BanInfo" b
-        ON u."UserId" = b."UserId"
-        WHERE LOWER ("Login") LIKE $1 AND "IsDeleted" = false AND u."IsBanned" = true
-        OR (LOWER ("Email") LIKE $2 AND "IsDeleted" = false AND u."IsBanned" = true)
-        ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
-        LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};
-      `;
-
-      itemsDBType = await this.dataSource.query(queryUsers, [
-        '%' + searchLoginTerm.toLocaleLowerCase() + '%',
-        '%' + searchEmailTerm.toLocaleLowerCase() + '%',
-      ]);
-
-      const queryCount = `SELECT count(*)
-                        FROM public."Users" u
-                        JOIN public."BanInfo" b
-                        ON u."UserId" = b."UserId"
-                        WHERE LOWER ("Login") LIKE $1 AND "IsDeleted" = false AND u."IsBanned" = true
-                        OR (LOWER ("Email") LIKE $2 AND "IsDeleted" = false AND u."IsBanned" = true)`;
-
-      const totalCountArray = await this.dataSource.query(queryCount, [
-        '%' + searchLoginTerm.toLocaleLowerCase() + '%',
-        '%' + searchEmailTerm.toLocaleLowerCase() + '%',
-      ]);
-
-      totalCount = Number(totalCountArray[0].count);
-
-      pagesCount = Math.ceil(totalCount / pageSize);
+      stringWhere =
+        'LOWER(login) like :loginTerm AND "isDeleted" = false AND u."isBanned" = true OR (Lower(email) like :emailTerm AND "isDeleted" = false AND u."isBanned" = true)';
     }
 
     if (banStatus === 'notBanned') {
-      const queryUsers = `
-        SELECT u."UserId" as "id", u."Login" as "login", u."Email" as "email", 
-                u."CreatedAt" as "createdAt", u."IsDeleted" as "isDeleted",
-                b."IsBanned" as "isBanned", b."BanReason" as "banReason", b."BanDate" as "banDate"
-        FROM public."Users" u
-        JOIN public."BanInfo" b
-        ON u."UserId" = b."UserId"
-        WHERE LOWER ("Login") LIKE $1 AND "IsDeleted" = false AND u."IsBanned" = false
-        OR (LOWER ("Email") LIKE $2 AND "IsDeleted" = false AND u."IsBanned" = false)
-        ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
-        LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};
-      `;
-
-      itemsDBType = await this.dataSource.query(queryUsers, [
-        '%' + searchLoginTerm.toLocaleLowerCase() + '%',
-        '%' + searchEmailTerm.toLocaleLowerCase() + '%',
-      ]);
-
-      const queryCount = `SELECT count(*)
-                        FROM public."Users" u
-                        JOIN public."BanInfo" b
-                        ON u."UserId" = b."UserId"
-                        WHERE LOWER ("Login") LIKE $1 AND "IsDeleted" = false AND u."IsBanned" = false
-                        OR (LOWER ("Email") LIKE $2 AND "IsDeleted" = false AND u."IsBanned" = false)`;
-
-      const totalCountArray = await this.dataSource.query(queryCount, [
-        '%' + searchLoginTerm.toLocaleLowerCase() + '%',
-        '%' + searchEmailTerm.toLocaleLowerCase() + '%',
-      ]);
-
-      totalCount = Number(totalCountArray[0].count);
-
-      pagesCount = Math.ceil(totalCount / pageSize);
+      stringWhere =
+        'LOWER(login) like :loginTerm AND "isDeleted" = false AND u."isBanned" = false OR (Lower(email) like :emailTerm AND "isDeleted" = false AND u."isBanned" = false)';
     }
 
-    const items = itemsDBType.map((i) => mapUserDBTypeToViewType(i));
+    const res = await this.usersRepo
+      .createQueryBuilder('u')
+      .innerJoinAndSelect('u.banInfo', 'b')
+      .select([
+        'u.id',
+        'u.login',
+        'u.email',
+        'u.createdAt',
+        'b.isBanned',
+        'b.banDate',
+        'b.banReason',
+      ])
+      .where(stringWhere, {
+        loginTerm: `%${searchLoginTerm.toLocaleLowerCase()}%`,
+        emailTerm: `%${searchEmailTerm.toLocaleLowerCase()}%`,
+      })
+      .limit(pageSize)
+      .orderBy('"' + sortBy + '"', sortDirection)
+      .offset((pageNumber - 1) * pageSize)
+      .getManyAndCount();
+
+    const totalCount = Number(res[1]);
+
+    const pagesCount = Math.ceil(totalCount / pageSize);
+
+    const items = res[0].map((i) => mapUserDBTypeToViewType(i));
 
     return {
       pagesCount,
