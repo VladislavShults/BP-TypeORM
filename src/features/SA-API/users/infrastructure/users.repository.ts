@@ -146,20 +146,23 @@ export class UsersRepository {
     userId: string,
     banInfo: { isBanned: boolean; banDate: Date; banReason: string },
   ): Promise<void> {
-    await this.dataSource.query(
-      `
-    UPDATE public."BanInfo"
-    SET "IsBanned"= $1, "BanDate"= $2, "BanReason"= $3
-    WHERE "UserId" = $4;`,
-      [banInfo.isBanned, banInfo.banDate, banInfo.banReason, userId],
-    );
-    await this.dataSource.query(
-      `
-    UPDATE public."Users"
-    SET "IsBanned"= $1
-    WHERE "UserId" = $2;`,
-      [banInfo.isBanned, userId],
-    );
+    await this.banInfoRepo
+      .createQueryBuilder()
+      .update(BanInfo)
+      .set({
+        isBanned: banInfo.isBanned,
+        banDate: banInfo.banDate,
+        banReason: banInfo.banReason,
+      })
+      .where('userId = :userId', { userId })
+      .execute();
+
+    await this.usersRepo
+      .createQueryBuilder()
+      .update(User)
+      .set({ isBanned: banInfo.isBanned })
+      .where('id = :userId', { userId })
+      .execute();
   }
 
   async refreshConfirmationCodeAndDate(

@@ -3,7 +3,6 @@ import {
   UsersJoinBanInfoType,
   UsersJoinEmailConfirmationType,
   ViewUsersTypeWithPagination,
-  ViewUserType,
 } from '../types/users.types';
 import { QueryUserDto } from './models/query-user.dto';
 import { mapUserDBTypeToViewType } from '../helpers/mapUserDBTypeToViewType';
@@ -166,7 +165,7 @@ export class UsersQueryRepository {
   }
 
   async getUserByIdWithBanInfo(
-    userId: string,
+    userId: number,
   ): Promise<Omit<User, 'emailConfirmation'> | null> {
     const result = await this.usersRepo
       .createQueryBuilder('u')

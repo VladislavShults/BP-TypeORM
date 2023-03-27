@@ -41,7 +41,7 @@ export class UsersController {
       inputModel,
     );
     return await this.usersQueryRepository.getUserByIdWithBanInfo(
-      userIdAndConfirmationCode.userId,
+      Number(userIdAndConfirmationCode.userId),
     );
   }
 

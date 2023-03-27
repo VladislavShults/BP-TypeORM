@@ -67,7 +67,9 @@ export class UsersService {
     userId: string,
     banModel: BanUserDto,
   ): Promise<boolean> {
-    const user = await this.usersQueryRepository.getUserByIdWithBanInfo(userId);
+    const user = await this.usersQueryRepository.getUserByIdWithBanInfo(
+      Number(userId),
+    );
 
     if (!user) return false;
 
