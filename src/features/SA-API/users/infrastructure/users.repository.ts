@@ -4,35 +4,43 @@ import {
   UserForTypeOrmType,
   UsersJoinEmailConfirmationType,
 } from '../types/users.types';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { User } from '../entities/user.entity';
+import { BanInfo } from '../entities/ban-info.entity';
+import { EmailConfirmation } from '../entities/email-confirmation.entity';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(User) private usersRepo: Repository<User>,
+    @InjectRepository(BanInfo) private banInfoRepo: Repository<BanInfo>,
+    @InjectRepository(EmailConfirmation)
+    private emailRepo: Repository<EmailConfirmation>,
+    @InjectDataSource() private readonly dataSource: DataSource,
+  ) {}
 
   async deleteUserById(userId: string): Promise<boolean> {
-    await this.dataSource.query(
-      `
-    UPDATE public."Users" u
-    SET "IsDeleted"=true
-    WHERE u."UserId" = $1;`,
-      [userId],
-    );
+    await this.usersRepo
+      .createQueryBuilder()
+      .update(User)
+      .set({ isDeleted: true })
+      .where('id = :userId', { userId })
+      .execute();
+
     return true;
   }
 
   async getUser(userId: string) {
     try {
-      const user = await this.dataSource.query(
-        `
-    SELECT "UserId", "Login", "CreatedAt", "IsDeleted"
-    FROM public."Users" u
-    WHERE u."UserId" = $1`,
-        [userId],
-      );
-      if (user.length === 0) return null;
-      return user[0];
+      const user = await this.usersRepo
+        .createQueryBuilder('u')
+        .where('u.id = :userId', { userId })
+        .select(['u.id', 'u.isDeleted'])
+        .getOne();
+
+      if (!user) return null;
+      return user;
     } catch (error) {
       return null;
     }
@@ -121,45 +129,17 @@ export class UsersRepository {
 
   async saveEmailConfirmation(
     emailConfirmation: EmailConfirmationType,
-  ): Promise<number> {
-    const result = await this.dataSource.query(
-      `INSERT INTO public."EmailConfirmation"(
-            "ConfirmationCode", "ExpirationDate", "IsConfirmed", "UserId")
-        VALUES ($1, $2, $3, $4)
-        RETURNING "EmailConfirmationId";`,
-      [
-        emailConfirmation.confirmationCode,
-        emailConfirmation.expirationDate,
-        emailConfirmation.isConfirmed,
-        emailConfirmation.userId,
-      ],
-    );
-    return result[0].EmailConfirmationId;
+  ): Promise<void> {
+    await this.emailRepo.save(emailConfirmation);
   }
 
-  async createUser(user: UserForTypeOrmType): Promise<number> {
-    const result = await this.dataSource.query(
-      `
-    INSERT INTO public."Users"(
-            "Login", "Email", "PasswordHash")
-    VALUES ($1, $2, $3)
-    RETURNING "UserId";
-    `,
-      [user.login, user.email, user.passwordHash],
-    );
-    return result[0].UserId;
+  async createUser(user: Omit<User, 'id'>): Promise<string> {
+    const newUser = await this.usersRepo.save(user);
+    return newUser.id;
   }
 
-  async createBanInfoForUser(userId: number): Promise<number> {
-    const result = await this.dataSource.query(
-      `INSERT INTO public."BanInfo"(
-        "IsBanned", "UserId")
-        VALUES ($1, $2)
-        RETURNING "BanInfoId";
-    `,
-      [false, userId],
-    );
-    return result[0].BanInfoId;
+  async createBanInfoForUser(banInfo: Omit<BanInfo, 'user'>): Promise<void> {
+    await this.banInfoRepo.save(banInfo);
   }
 
   async banOrUnbanUser(

@@ -23,6 +23,7 @@ import { QueryUserDto } from './models/query-user.dto';
 import { URIParamUserDto } from './models/URIParam-user.dto';
 import { BanUserDto } from './models/ban-user.dto';
 import { BasicAuthGuard } from '../../../public-API/auth/guards/basic-auth.guard';
+import { User } from '../entities/user.entity';
 
 @Controller('sa/users')
 export class UsersController {
@@ -33,11 +34,13 @@ export class UsersController {
   @Post()
   @HttpCode(201)
   @UseGuards(BasicAuthGuard)
-  async createUser(@Body() inputModel: CreateUserDto): Promise<ViewUserType> {
+  async createUser(
+    @Body() inputModel: CreateUserDto,
+  ): Promise<Omit<User, 'emailConfirmation'>> {
     const userIdAndConfirmationCode = await this.usersService.createUser(
       inputModel,
     );
-    return await this.usersQueryRepository.getUserByIdJoinBanInfoType(
+    return await this.usersQueryRepository.getUserByIdWithBanInfo(
       userIdAndConfirmationCode.userId,
     );
   }

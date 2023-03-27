@@ -8,13 +8,21 @@ import {
 import { QueryUserDto } from './models/query-user.dto';
 import { mapUserDBTypeToViewType } from '../helpers/mapUserDBTypeToViewType';
 import { InfoAboutMeType } from '../../../public-API/auth/types/info-about-me-type';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { mapUserSQLTypeToViewType } from '../helpers/mapUserSQLTypeToViewType';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { User } from '../entities/user.entity';
+import { BanInfo } from '../entities/ban-info.entity';
+import { EmailConfirmation } from '../entities/email-confirmation.entity';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(User) private usersRepo: Repository<User>,
+    @InjectRepository(BanInfo) private banInfoRepo: Repository<BanInfo>,
+    @InjectRepository(EmailConfirmation)
+    private emailRepo: Repository<EmailConfirmation>,
+  ) {}
 
   async getUsers(query: QueryUserDto): Promise<ViewUsersTypeWithPagination> {
     const banStatus: string = query.banStatus || 'all';
@@ -157,24 +165,27 @@ export class UsersQueryRepository {
     };
   }
 
-  async getUserByIdJoinBanInfoType(
-    userId: number,
-  ): Promise<ViewUserType | null> {
-    const userSQLType = await this.dataSource.query(
-      `
-    SELECT u."UserId" as "id", u."Login" as "login", u."Email" as "email",u."IsBanned" as "isBanned",
-           u."CreatedAt" as "createdAt", b."BanDate" as "banDate", b."BanReason" as "banReason"
-    FROM public."BanInfo" b
-    JOIN public."Users" u
-    ON b."UserId" = u."UserId"
-    WHERE b."UserId" = $1
-    `,
-      [userId],
-    );
+  async getUserByIdWithBanInfo(
+    userId: string,
+  ): Promise<Omit<User, 'emailConfirmation'> | null> {
+    const result = await this.usersRepo
+      .createQueryBuilder('u')
+      .innerJoinAndSelect('u.banInfo', 'b')
+      .where('u.id = :userId', { userId })
+      .select([
+        'u.id',
+        'u.login',
+        'u.email',
+        'u.createdAt',
+        'b.isBanned',
+        'b.banDate',
+        'b.banReason',
+      ])
+      .getOne();
 
-    if (userSQLType.length === 0) return null;
+    result.id = result.id.toString();
 
-    return mapUserSQLTypeToViewType(userSQLType[0]);
+    return result;
   }
 
   async getUserByIdJoinEmailConfirmationType(

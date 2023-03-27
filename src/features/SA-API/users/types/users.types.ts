@@ -30,7 +30,7 @@ export type EmailConfirmationType = {
   confirmationCode: string;
   expirationDate: Date;
   isConfirmed: boolean;
-  userId: number;
+  userId: string;
 };
 
 export type UserForTypeOrmType = {
