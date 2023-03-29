@@ -8,9 +8,10 @@ import { UsersQueryRepository } from '../api/users.query.repository';
 import { UsersService } from '../application/users.servive';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { UsersController } from '../api/users.controller';
+import { DeviceSessionModule } from '../../../public-API/devices/module/device-session.module';
 
 @Module({
-  imports: [UsersModule],
+  imports: [UsersModule, DeviceSessionModule],
   providers: [
     DevicesService,
     DeviceRepository,

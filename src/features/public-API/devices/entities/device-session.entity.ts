@@ -2,7 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { uuid } from 'uuidv4';
@@ -22,7 +22,7 @@ export class DeviceSession {
   @Column()
   deviceName: string;
 
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   @JoinColumn()
   user: User;
 
@@ -33,8 +33,8 @@ export class DeviceSession {
   lastActiveDate: Date;
 
   @Column()
-  expiresAt: number;
+  expiresAt: string;
 
   @Column()
-  issuedAt: number;
+  issuedAt: string;
 }

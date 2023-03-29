@@ -132,8 +132,8 @@ export class AuthController {
     );
     res
       .cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: true,
+        httpOnly: false,
+        secure: false,
         maxAge: 200 * 1000,
       })
       .status(200)

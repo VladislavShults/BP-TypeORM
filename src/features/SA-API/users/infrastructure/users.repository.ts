@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  EmailConfirmationType,
-  UserForTypeOrmType,
-  UsersJoinEmailConfirmationType,
-} from '../types/users.types';
+import { EmailConfirmationType } from '../types/users.types';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';

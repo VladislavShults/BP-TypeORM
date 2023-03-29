@@ -62,11 +62,11 @@ export class DevicesService {
     const deviceId = await this.jwtUtility.extractDeviceIdFromToken(
       refreshToken,
     );
-    const issueAt = extractIssueAtFromRefreshToken(refreshToken);
+    const issuedAt = extractIssueAtFromRefreshToken(refreshToken);
     const expiresAt = extractExpiresDateFromRefreshToken(refreshToken);
-    if (userId && deviceId && issueAt && deviceName && expiresAt) {
+    if (userId && deviceId && issuedAt && deviceName && expiresAt) {
       const newInput: Omit<DevicesSecuritySessionType, 'deviceSessionId'> = {
-        issuedAt: issueAt,
+        issuedAt,
         deviceId: deviceId.toString(),
         ip,
         deviceName,

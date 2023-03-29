@@ -1,19 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { DevicesSecuritySessionType } from '../types/devices.types';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { User } from '../../../SA-API/users/entities/user.entity';
+import { DeviceSession } from '../entities/device-session.entity';
 
 @Injectable()
 export class DeviceRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(DeviceSession)
+    private deviceRepo: Repository<DeviceSession>,
+  ) {}
 
   async deleteDeviceSession(userId: string, deviceId: string) {
-    await this.dataSource.query(
-      `
-    DELETE FROM public."DeviceSession"
-    WHERE "UserId" = $1 AND "DeviceId" = $2;`,
-      [userId, deviceId],
-    );
+    // await this.dataSource.query(
+    //   `
+    // DELETE FROM public."DeviceSession"
+    // WHERE "UserId" = $1 AND "DeviceId" = $2;`,
+    //   [userId, deviceId],
+    // );
+    await this.deviceRepo.delete({ userId: Number(userId), deviceId });
   }
 
   async findDeviceByIssueAtAndUserId(
@@ -57,21 +64,7 @@ export class DeviceRepository {
   async saveDeviceInputInDB(
     newInput: Omit<DevicesSecuritySessionType, 'deviceSessionId'>,
   ): Promise<void> {
-    await this.dataSource.query(
-      `
-    INSERT INTO public."DeviceSession"(
-        "DeviceId", "Ip", "DeviceName", "UserId", "LastActiveDate", "ExpiresAt", "IssuedAt")
-    VALUES ($1, $2, $3, $4, $5, $6, $7);`,
-      [
-        newInput.deviceId,
-        newInput.ip,
-        newInput.deviceName,
-        newInput.userId,
-        newInput.lastActiveDate,
-        newInput.expiresAt,
-        newInput.issuedAt,
-      ],
-    );
+    await this.deviceRepo.save(newInput);
   }
 
   async changeRefreshTokenInDeviceSession(

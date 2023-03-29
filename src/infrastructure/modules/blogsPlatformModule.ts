@@ -37,6 +37,8 @@ import { UserHttpModule } from '../../features/SA-API/users/module/users-http.mo
 import { UsersModule } from '../../features/SA-API/users/module/users.module';
 import { IpRestrictionModule } from '../../features/ip-restriction/module/ip-restriction.module';
 import { IpRestrictionHttpModule } from '../../features/ip-restriction/module/ip-restriction-http.module';
+import { DeviceSessionModule } from '../../features/public-API/devices/module/device-session.module';
+import { DeviceSessionHttpModule } from '../../features/public-API/devices/module/device-session-http.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { IpRestrictionHttpModule } from '../../features/ip-restriction/module/ip
     UsersModule,
     IpRestrictionModule,
     IpRestrictionHttpModule,
+    DeviceSessionModule,
+    DeviceSessionHttpModule,
   ],
   controllers: [
     BlogsController,
