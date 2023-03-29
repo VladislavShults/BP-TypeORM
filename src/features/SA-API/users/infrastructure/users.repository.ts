@@ -31,7 +31,7 @@ export class UsersRepository {
     return true;
   }
 
-  async getUser(userId: string) {
+  async getUserById(userId: string) {
     try {
       const user = await this.usersRepo
         .createQueryBuilder('u')
@@ -72,20 +72,14 @@ export class UsersRepository {
   }
 
   async checkUserByEmailInDB(email: string): Promise<number | null> {
-    const account = await this.dataSource.query(
-      `
-    SELECT u."UserId" as "id", u."Login" as "login", u."Email" as "email",
-           e."IsConfirmed" as "isConfirmed", e."ConfirmationCode" as "confirmationCode",
-           e."ExpirationDate" as "expirationDate"
-    FROM public."Users" u
-    JOIN public."EmailConfirmation" e
-    ON u."UserId" = e."UserId"
-    WHERE "IsDeleted" = false AND "Email" = $1
-    `,
-      [email],
-    );
-    if (account.length === 0) return null;
-    else return account[0].id;
+    const account = await this.usersRepo
+      .createQueryBuilder('u')
+      .select(['u.id'])
+      .where('u.email = :email AND u."isDeleted" = false', { email })
+      .getOne();
+
+    if (!account) return null;
+    else return Number(account.id);
   }
 
   async accountIsConfirmed(email: string): Promise<boolean> {
@@ -190,5 +184,16 @@ export class UsersRepository {
     WHERE "UserId" = $2;`,
       [newPasswordHash, userId],
     );
+  }
+
+  async checkUserByLoginInDB(login: string): Promise<number | null> {
+    const account = await this.usersRepo
+      .createQueryBuilder('u')
+      .select(['u.id'])
+      .where('u.login = :login AND u."isDeleted" = false', { login })
+      .getOne();
+
+    if (!account) return null;
+    else return Number(account.id);
   }
 }

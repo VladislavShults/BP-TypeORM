@@ -56,7 +56,7 @@ export class UsersService {
   }
 
   async deleteUserById(userId: string): Promise<boolean> {
-    const user = await this.usersRepository.getUser(userId);
+    const user = await this.usersRepository.getUserById(userId);
 
     if (!user || user.isDeleted) return false;
 
@@ -101,6 +101,6 @@ export class UsersService {
   }
 
   async findUserById(userId: string) {
-    return this.usersRepository.getUser(userId);
+    return this.usersRepository.getUserById(userId);
   }
 }

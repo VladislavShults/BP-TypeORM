@@ -34,12 +34,17 @@ import { AdminBlogsQueryRepository } from '../../features/SA-API/blogs/api/admin
 import { BloggerUsersController } from '../../features/bloggers-API/users/api/blogger.users.controller';
 import { DeviceRepository } from '../../features/public-API/devices/infrastructure/devices.repository';
 import { UserHttpModule } from '../../features/SA-API/users/module/users-http.module';
-import { Repository } from 'typeorm';
-import { User } from '../../features/SA-API/users/entities/user.entity';
 import { UsersModule } from '../../features/SA-API/users/module/users.module';
+import { IpRestrictionModule } from '../../features/ip-restriction/module/ip-restriction.module';
+import { IpRestrictionHttpModule } from '../../features/ip-restriction/module/ip-restriction-http.module';
 
 @Module({
-  imports: [UserHttpModule, UsersModule],
+  imports: [
+    UserHttpModule,
+    UsersModule,
+    IpRestrictionModule,
+    IpRestrictionHttpModule,
+  ],
   controllers: [
     BlogsController,
     BloggersBlogsController,

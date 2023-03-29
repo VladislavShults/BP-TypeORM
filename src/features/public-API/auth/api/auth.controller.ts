@@ -32,6 +32,7 @@ import { Cookies } from '../decorators/cookies.decorator';
 import { CheckRefreshTokenInCookie } from '../guards/checkRefreshTokenInCookie';
 import { DevicesService } from '../../devices/application/devices.service';
 import { JwtAuthGuard } from '../guards/JWT-auth.guard';
+import { IpRestrictionGuard } from '../../../../infrastructure/ip-restriction/guards/ip-restriction.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -47,7 +48,7 @@ export class AuthController {
   @Post('registration')
   @HttpCode(204)
   @UseGuards(
-    // IpRestrictionGuard,
+    IpRestrictionGuard,
     CheckDuplicatedEmailGuard,
     CheckDuplicatedLoginGuard,
   )

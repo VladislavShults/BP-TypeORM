@@ -6,12 +6,17 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { User } from '../../../features/SA-API/users/entities/user.entity';
+import { IpRestriction } from '../../../features/ip-restriction/entities/ip-restriction.entity';
 
 @Injectable()
 export class IpRestrictionGuard implements CanActivate {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(IpRestriction)
+    private ipRestrictionRepo: Repository<IpRestriction>,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
@@ -19,28 +24,32 @@ export class IpRestrictionGuard implements CanActivate {
     const url = request.url;
     const ip = request.ip;
 
-    const inputCountArray: [{ count: number }] = await this.dataSource.query(
-      `
-    SELECT COUNT(*)
-    FROM public."IpRestriction"
-    WHERE "URL" = $1 AND "CurrentIp" = $2 AND "EntryTime" > current_timestamp - interval '10 seconds'`,
-      [url, ip],
-    );
+    const time = new Date(new Date().getTime() - 10000);
 
-    if (inputCountArray[0].count >= 5)
+    const inputCount = await this.ipRestrictionRepo
+      .createQueryBuilder()
+      .where(`url = :url AND "currentIp" = :ip AND "entryTime" > :time`, {
+        url,
+        ip,
+        time,
+      })
+      .getManyAndCount();
+
+    if (inputCount[1] >= 5)
       throw new HttpException('ip-restriction', HttpStatus.TOO_MANY_REQUESTS);
 
-    await this.dataSource.query(
-      `
-    INSERT INTO public."IpRestriction"(
-    "URL", "CurrentIp", "EntryTime")
-    VALUES ($1, $2, $3);`,
-      [url, ip, new Date()],
-    );
+    await this.ipRestrictionRepo.save({
+      url,
+      currentIp: ip,
+      entryTime: new Date(),
+    });
 
-    await this.dataSource.query(`
-    DELETE FROM public."IpRestriction"
-    WHERE "EntryTime" < current_timestamp - interval '10 seconds';`);
+    await this.ipRestrictionRepo
+      .createQueryBuilder()
+      .delete()
+      .from(IpRestriction)
+      .where('"entryTime" < :time', { time })
+      .execute();
 
     return true;
   }
