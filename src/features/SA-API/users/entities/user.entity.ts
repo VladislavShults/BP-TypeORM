@@ -29,5 +29,5 @@ export class User {
   banInfo: Omit<BanInfo, 'userId'>;
 
   @OneToOne(() => EmailConfirmation, (e) => e.user)
-  emailConfirmation: EmailConfirmation;
+  emailConfirmation: Omit<EmailConfirmation, 'userId'>;
 }

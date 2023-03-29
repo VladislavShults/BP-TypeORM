@@ -48,7 +48,7 @@ export class AuthController {
   @Post('registration')
   @HttpCode(204)
   @UseGuards(
-    IpRestrictionGuard,
+    // IpRestrictionGuard,
     CheckDuplicatedEmailGuard,
     CheckDuplicatedLoginGuard,
   )
@@ -74,7 +74,7 @@ export class AuthController {
       await this.authService.findAccountByConfirmationCode(inputModel.code);
     if (!userByConfirmationCode)
       throw new BadRequestException(createErrorMessage('code'));
-    if (userByConfirmationCode.isConfirmed)
+    if (userByConfirmationCode.emailConfirmation.isConfirmed)
       throw new BadRequestException(createErrorMessage('code'));
     await this.authService.confirmAccount(inputModel.code);
 
@@ -196,7 +196,7 @@ export class AuthController {
     await this.authService.refreshConfirmationCode(email);
     await this.emailService.sendEmailRecoveryCode(
       inputModel.email,
-      user.confirmationCode,
+      user.emailConfirmation.confirmationCode,
     );
     return;
   }
@@ -219,7 +219,7 @@ export class AuthController {
 
     await this.authService.changePassword(
       hashNewPassword,
-      userByConfirmationCode.userId.toString(),
+      userByConfirmationCode.id.toString(),
     );
 
     return;

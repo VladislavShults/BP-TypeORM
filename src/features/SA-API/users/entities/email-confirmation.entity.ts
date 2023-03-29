@@ -12,8 +12,8 @@ export class EmailConfirmation {
   @Column()
   isConfirmed: boolean;
 
-  @OneToOne(() => User)
-  @JoinColumn()
+  @OneToOne(() => User, (u) => u.emailConfirmation)
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @Column()

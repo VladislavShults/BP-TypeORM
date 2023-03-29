@@ -47,27 +47,39 @@ export class UsersRepository {
   }
 
   async findAccountByConfirmationCode(code: string) {
-    const account = await this.dataSource.query(
-      `
-    SELECT "ExpirationDate" as "expirationDate", "IsConfirmed" as "isConfirmed", "UserId" as "userId"
-    FROM public."EmailConfirmation"
-    WHERE "ConfirmationCode" = $1`,
-      [code],
-    );
+    const account = await this.usersRepo
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.emailConfirmation', 'e')
+      .select([
+        'u.id',
+        'u.login',
+        'u.email',
+        'e.isConfirmed',
+        'e.confirmationCode',
+        'e.expirationDate',
+      ])
+      .where('e."confirmationCode" = :code', { code })
+      .getOne();
 
-    if (account.length === 0) return null;
+    if (!account) return null;
 
-    return account[0];
+    return account;
   }
 
   async confirmedAccount(code: string): Promise<boolean> {
-    await this.dataSource.query(
-      `
-    UPDATE public."EmailConfirmation"
-    SET "IsConfirmed"=true
-    WHERE "ConfirmationCode" = $1`,
-      [code],
-    );
+    // await this.dataSource.query(
+    //   `
+    // UPDATE public."EmailConfirmation"
+    // SET "IsConfirmed"=true
+    // WHERE "ConfirmationCode" = $1`,
+    //   [code],
+    // );
+    await this.emailRepo
+      .createQueryBuilder()
+      .update(EmailConfirmation)
+      .set({ isConfirmed: true })
+      .where('"confirmationCode" = :code', { code })
+      .execute();
     return;
   }
 
@@ -83,42 +95,34 @@ export class UsersRepository {
   }
 
   async accountIsConfirmed(email: string): Promise<boolean> {
-    const account: UsersJoinEmailConfirmationType[] =
-      await this.dataSource.query(
-        `
-    SELECT u."UserId" as "id", u."Login" as "login", u."Email" as "email",
-           e."IsConfirmed" as "isConfirmed", e."ConfirmationCode" as "confirmationCode",
-           e."ExpirationDate" as "expirationDate"
-    FROM public."Users" u
-    JOIN public."EmailConfirmation" e
-    ON u."UserId" = e."UserId"
-    WHERE "IsDeleted" = false AND "Email" = $1`,
-        [email],
-      );
+    const account = await this.getAccountWithEmailConfirmationByEmail(email);
 
-    if (account.length === 0) return true;
+    if (!account) return true;
 
-    return account[0].isConfirmed;
+    return account.emailConfirmation.isConfirmed;
   }
 
-  async findByLoginOrEmail(
-    loginOrEmail: string,
-  ): Promise<UsersJoinEmailConfirmationType | null> {
-    const accountByLoginOrEmail = await this.dataSource.query(
-      `
-    SELECT u."UserId" as "id", u."Login" as "login", u."Email" as "email",
-           e."ConfirmationCode" as "confirmationCode"
-    FROM public."Users" u
-    JOIN public."EmailConfirmation" e
-    ON u."UserId" = e."UserId"
-    WHERE u."IsDeleted" = false AND u."Login" = $1
-    OR(u."IsDeleted" = false AND u."Email" = $1)`,
-      [loginOrEmail],
-    );
+  async findByLoginOrEmail(loginOrEmail: string) {
+    const accountByLoginOrEmail = await this.usersRepo
+      .createQueryBuilder('u')
+      .innerJoinAndSelect('u.emailConfirmation', 'e')
+      .select([
+        'u.id',
+        'u.login',
+        'u.email',
+        'e.isConfirmed',
+        'e.confirmationCode',
+        'e.expirationDate',
+      ])
+      .where(
+        '"isDeleted" = false AND login = :loginOrEmail OR("isDeleted" = false AND email = :loginOrEmail)',
+        { loginOrEmail },
+      )
+      .getOne();
 
-    if (accountByLoginOrEmail.length === 0) return null;
+    if (!accountByLoginOrEmail) return null;
 
-    return accountByLoginOrEmail[0];
+    return accountByLoginOrEmail;
   }
 
   async saveEmailConfirmation(
@@ -160,20 +164,16 @@ export class UsersRepository {
   }
 
   async refreshConfirmationCodeAndDate(
-    userId: number,
+    email: string,
     newConfirmationData: { confirmationCode: string; expirationDate: Date },
   ) {
-    await this.dataSource.query(
-      `
-    UPDATE public."EmailConfirmation"
-    SET "ConfirmationCode"=$1, "ExpirationDate"=$2
-    WHERE "UserId" = $3;`,
-      [
-        newConfirmationData.confirmationCode,
-        newConfirmationData.expirationDate,
-        userId,
-      ],
-    );
+    const account = await this.getAccountWithEmailConfirmationByEmail(email);
+
+    await this.emailRepo.save({
+      confirmationCode: newConfirmationData.confirmationCode,
+      expirationDate: newConfirmationData.expirationDate,
+      userId: account.id,
+    });
   }
 
   async changePassword(newPasswordHash: string, userId: string) {
@@ -196,4 +196,23 @@ export class UsersRepository {
     if (!account) return null;
     else return Number(account.id);
   }
+
+  private getAccountWithEmailConfirmationByEmail = async (email: string) => {
+    const account = await this.usersRepo
+      .createQueryBuilder('u')
+      .innerJoinAndSelect('u.emailConfirmation', 'e')
+      .select([
+        'u.id',
+        'u.login',
+        'u.email',
+        'e.isConfirmed',
+        'e.confirmationCode',
+        'e.expirationDate',
+      ])
+      .where('u.email = :email', { email })
+      .getOne();
+
+    if (!account) return null;
+    return account;
+  };
 }

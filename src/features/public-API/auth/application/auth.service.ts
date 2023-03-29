@@ -44,7 +44,7 @@ export class AuthService {
     };
 
     await this.usersRepository.refreshConfirmationCodeAndDate(
-      userId,
+      email,
       newConfirmationData,
     );
 
@@ -56,7 +56,7 @@ export class AuthService {
       code,
     );
     if (!account) return null;
-    if (new Date() > account.expirationDate) return null;
+    if (new Date() > account.emailConfirmation.expirationDate) return null;
     return account;
   }
 

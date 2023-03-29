@@ -60,9 +60,11 @@ export type UsersJoinEmailConfirmationType = {
   id: number;
   login: string;
   email: string;
-  isConfirmed: boolean;
-  confirmationCode: string;
-  expirationDate: Date;
+  emailConfirmation: {
+    isConfirmed: boolean;
+    confirmationCode: string;
+    expirationDate: Date;
+  };
 };
 
 export type UsersForCheckInDB = {
