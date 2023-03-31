@@ -27,16 +27,15 @@ export class DeviceRepository {
     issueAt: string,
     userId: string,
   ): Promise<boolean> {
-    const deviceIdArray = await this.dataSource.query(
-      `
-    SELECT "DeviceId"
-    FROM "DeviceSession"
-    WHERE "UserId" = $1 AND "IssuedAt" = $2
-    `,
-      [userId, issueAt],
-    );
+    const deviceId = await this.deviceRepo
+      .createQueryBuilder()
+      .where('"userId" = :userId AND "issuedAt" = :issueAt', {
+        userId,
+        issueAt,
+      })
+      .getOne();
 
-    return deviceIdArray.length !== 0;
+    return !!deviceId;
   }
 
   async terminateAllSessionExceptThis(userId: string, deviceId: string) {
@@ -75,20 +74,29 @@ export class DeviceRepository {
     ip: string,
   ) {
     try {
-      await this.dataSource.query(
-        `
-      UPDATE public."DeviceSession"
-      SET "Ip"=$1, "LastActiveDate"=$2, "ExpiresAt"=$3, "IssuedAt"=$4
-      WHERE "UserId" = $5 AND "IssuedAt" = $6;`,
-        [
-          ip,
-          new Date(),
-          expiresAtNewToken,
-          issuedAtNewToken,
-          userIdOldToken,
-          issuedAtOldToken,
-        ],
-      );
+      // await this.dataSource.query(
+      //   `
+      // UPDATE public."DeviceSession"
+      // SET "Ip"=$1, "LastActiveDate"=$2, "ExpiresAt"=$3, "IssuedAt"=$4
+      // WHERE "UserId" = $5 AND "IssuedAt" = $6;`,
+      //   [
+      //     ip,
+      //     new Date(),
+      //     expiresAtNewToken,
+      //     issuedAtNewToken,
+      //     userIdOldToken,
+      //     issuedAtOldToken,
+      //   ],
+      // );
+      await this.deviceRepo
+        .createQueryBuilder()
+        .update(DeviceSession)
+        .set({ ip, issuedAt: issuedAtNewToken, expiresAt: expiresAtNewToken })
+        .where(
+          '"issuedAt" = :issuedAtOldToken AND "userId" = :userIdOldToken',
+          { issuedAtOldToken, userIdOldToken },
+        )
+        .execute();
     } catch (error) {
       return null;
     }
