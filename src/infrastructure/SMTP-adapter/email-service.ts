@@ -27,7 +27,9 @@ export class EmailService {
       });
     };
 
-    await sendMessage();
+    const s = await sendMessage();
+
+    return s;
     // const info = transporter.sendMail({
     //   from: '"Vladislav" <shvs1510@gmail.com>',
     //   to: email,
