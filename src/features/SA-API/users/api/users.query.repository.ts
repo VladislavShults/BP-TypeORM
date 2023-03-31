@@ -24,7 +24,8 @@ export class UsersQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'ASC' | 'DESC' = query.sortDirection || 'DESC';
+    const sortDirection: 'ASC' | 'DESC' =
+      (query.sortDirection.toUpperCase() as 'ASC' | 'DESC') || 'DESC';
     const searchLoginTerm: string | null = query.searchLoginTerm || '';
     const searchEmailTerm: string | null = query.searchEmailTerm || '';
 
