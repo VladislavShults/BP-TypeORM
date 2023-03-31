@@ -6,7 +6,7 @@ export class EmailService {
   async sendEmailRecoveryCode(email: string, code: string) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      host: 'smtp.gmail.com',
+      // host: 'smtp.gmail.com',
       auth: {
         user: process.env.userNodemailer,
         pass: process.env.passwordNodemailer,
