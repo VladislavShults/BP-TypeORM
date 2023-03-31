@@ -31,8 +31,7 @@ import { UsersForCheckInDB } from '../../../SA-API/users/types/users.types';
 import { Cookies } from '../decorators/cookies.decorator';
 import { CheckRefreshTokenInCookie } from '../guards/checkRefreshTokenInCookie';
 import { DevicesService } from '../../devices/application/devices.service';
-import { JwtAuthGuard } from '../guards/JWT-auth.guard';
-import { IpRestrictionGuard } from '../../../../infrastructure/ip-restriction/guards/ip-restriction.guard';
+import { JWTAuthRefreshTokenGuard } from '../guards/JWT-auth-RefreshTokenGuard';
 
 @Controller('auth')
 export class AuthController {
@@ -234,9 +233,9 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JWTAuthRefreshTokenGuard)
   async infoAboutMe(@Request() req): Promise<InfoAboutMeType> {
-    const userId = Number(req.user.userId);
+    const userId = Number(req.user.id);
 
     return await this.usersQueryRepository.returnInfoAboutMe(userId);
   }

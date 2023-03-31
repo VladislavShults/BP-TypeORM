@@ -63,13 +63,6 @@ export class UsersRepository {
   }
 
   async confirmedAccount(code: string): Promise<boolean> {
-    // await this.dataSource.query(
-    //   `
-    // UPDATE public."EmailConfirmation"
-    // SET "IsConfirmed"=true
-    // WHERE "ConfirmationCode" = $1`,
-    //   [code],
-    // );
     await this.emailRepo
       .createQueryBuilder()
       .update(EmailConfirmation)

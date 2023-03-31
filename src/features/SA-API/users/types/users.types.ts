@@ -56,7 +56,7 @@ export type UsersJoinBanInfoType = {
   banInfo: { isBanned: boolean; banReason: string; banDate: Date };
 };
 
-export type UsersJoinEmailConfirmationType = {
+export type UserWithEmailConfirmationType = {
   id: number;
   login: string;
   email: string;

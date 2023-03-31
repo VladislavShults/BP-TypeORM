@@ -6,14 +6,13 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtService } from '../../../../infrastructure/JWT-utility/jwt-service';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { UsersQueryRepository } from '../../../SA-API/users/api/users.query.repository';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly jwtUtility: JwtService,
-    @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly userQueryRepo: UsersQueryRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -25,17 +24,19 @@ export class JwtAuthGuard implements CanActivate {
     const userId = await this.jwtUtility.extractUserIdFromToken(token);
     if (!userId) throw new UnauthorizedException();
 
-    const user = await this.dataSource.query(
-      `
-    SELECT "UserId" as "id", "Login" as "login", "IsBanned" as "isBanned"
-    FROM public."Users"
-    WHERE "UserId" = $1`,
-      [userId],
+    const userWithBanInfo = await this.userQueryRepo.getUserByIdWithBanInfo(
+      Number(userId),
     );
 
-    if (user.length === 0) throw new UnauthorizedException();
+    if (!userWithBanInfo) throw new UnauthorizedException();
 
-    request.user = user[0];
+    const user = {
+      id: userWithBanInfo.id,
+      login: userWithBanInfo.login,
+      isBanned: userWithBanInfo.banInfo.isBanned,
+    };
+
+    request.user = user;
 
     return true;
   }

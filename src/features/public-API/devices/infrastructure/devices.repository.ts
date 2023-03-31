@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { DevicesSecuritySessionType } from '../types/devices.types';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { User } from '../../../SA-API/users/entities/user.entity';
 import { DeviceSession } from '../entities/device-session.entity';
 
 @Injectable()
@@ -14,12 +13,6 @@ export class DeviceRepository {
   ) {}
 
   async deleteDeviceSession(userId: string, deviceId: string) {
-    // await this.dataSource.query(
-    //   `
-    // DELETE FROM public."DeviceSession"
-    // WHERE "UserId" = $1 AND "DeviceId" = $2;`,
-    //   [userId, deviceId],
-    // );
     await this.deviceRepo.delete({ userId: Number(userId), deviceId });
   }
 
@@ -74,20 +67,6 @@ export class DeviceRepository {
     ip: string,
   ) {
     try {
-      // await this.dataSource.query(
-      //   `
-      // UPDATE public."DeviceSession"
-      // SET "Ip"=$1, "LastActiveDate"=$2, "ExpiresAt"=$3, "IssuedAt"=$4
-      // WHERE "UserId" = $5 AND "IssuedAt" = $6;`,
-      //   [
-      //     ip,
-      //     new Date(),
-      //     expiresAtNewToken,
-      //     issuedAtNewToken,
-      //     userIdOldToken,
-      //     issuedAtOldToken,
-      //   ],
-      // );
       await this.deviceRepo
         .createQueryBuilder()
         .update(DeviceSession)
