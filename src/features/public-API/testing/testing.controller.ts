@@ -10,7 +10,7 @@ export class TestingController {
   async clearAllData(): Promise<HttpStatus> {
     await this.dataSource.query(`DELETE FROM public."ban_info"`);
     await this.dataSource.query(`DELETE FROM public."email_confirmation"`);
-    // await this.dataSource.query(`DELETE FROM public."DeviceSession"`);
+    await this.dataSource.query(`DELETE FROM public."device_session"`);
     // await this.dataSource.query(`DELETE FROM public."CommentsLikesOrDislike"`);
     // await this.dataSource.query(`DELETE FROM public."PostsLikesOrDislike"`);
     // await this.dataSource.query(`DELETE FROM public."Comments"`);
