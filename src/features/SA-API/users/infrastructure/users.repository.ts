@@ -173,13 +173,12 @@ export class UsersRepository {
   }
 
   async changePassword(newPasswordHash: string, userId: string) {
-    await this.dataSource.query(
-      `
-    UPDATE public."Users"
-    SET "PasswordHash"=$1
-    WHERE "UserId" = $2;`,
-      [newPasswordHash, userId],
-    );
+    await this.usersRepo
+      .createQueryBuilder()
+      .update(User)
+      .set({ passwordHash: newPasswordHash })
+      .where('id = :userId', { userId })
+      .execute();
   }
 
   async checkUserByLoginInDB(login: string): Promise<number | null> {

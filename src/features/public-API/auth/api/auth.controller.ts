@@ -193,11 +193,8 @@ export class AuthController {
     const email = inputModel.email;
     const user = await this.usersService.findUserByLoginOrEmail(email);
     if (!user) return;
-    await this.authService.refreshConfirmationCode(email);
-    await this.emailService.sendEmailRecoveryCode(
-      inputModel.email,
-      user.emailConfirmation.confirmationCode,
-    );
+    const newCode = await this.authService.refreshConfirmationCode(email);
+    await this.emailService.sendEmailRecoveryCode(inputModel.email, newCode);
     return;
   }
 
