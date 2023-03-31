@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import * as dotenv from 'dotenv';
+dotenv.config();
 import nodemailer from 'nodemailer';
 
 @Injectable()
@@ -6,7 +8,7 @@ export class EmailService {
   async sendEmailRecoveryCode(email: string, code: string) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      // host: 'smtp.gmail.com',
+      host: 'smtp.gmail.com',
       auth: {
         user: process.env.userNodemailer,
         pass: process.env.passwordNodemailer,
