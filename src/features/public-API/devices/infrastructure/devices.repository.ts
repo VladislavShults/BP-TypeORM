@@ -32,29 +32,27 @@ export class DeviceRepository {
   }
 
   async terminateAllSessionExceptThis(userId: string, deviceId: string) {
-    await this.dataSource.query(
-      `
-        DELETE FROM public."DeviceSession"
-        WHERE "DeviceId" NOT IN ($1) AND "UserId" = $2`,
-      [deviceId, userId],
-    );
+    await this.deviceRepo
+      .createQueryBuilder()
+      .delete()
+      .where('"deviceId" NOT IN (:deviceId) AND "userId" = :userId', {
+        deviceId,
+        userId,
+      })
+      .execute();
   }
 
   async getSessionByDeviceId(
     deviceId: string,
-  ): Promise<DevicesSecuritySessionType[] | null> {
-    return this.dataSource.query(
-      `
-    SELECT "DeviceSessionId" as "deviceSessionId", "DeviceId" as "deviceId", "Ip" as "ip", "DeviceName" as "deviceName",
-            "UserId" as "userId", "LastActiveDate" as "lastActiveDate", "ExpiresAt" as "expiresAt", "IssuedAt" as "issuedAt"
-    FROM public."DeviceSession"
-    WHERE "DeviceId" = $1`,
-      [deviceId],
-    );
+  ): Promise<DevicesSecuritySessionType | null> {
+    return this.deviceRepo
+      .createQueryBuilder()
+      .where('"deviceId" = :deviceId', { deviceId })
+      .getOne();
   }
 
   async saveDeviceInputInDB(
-    newInput: Omit<DevicesSecuritySessionType, 'deviceSessionId'>,
+    newInput: Omit<DevicesSecuritySessionType, 'id'>,
   ): Promise<void> {
     await this.deviceRepo.save(newInput);
   }

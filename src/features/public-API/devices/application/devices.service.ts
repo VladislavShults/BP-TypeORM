@@ -32,8 +32,8 @@ export class DevicesService {
   ): Promise<DevicesSecuritySessionType> {
     const sessionsByDeviceIdArray =
       await this.deviceRepository.getSessionByDeviceId(deviceId);
-    if (sessionsByDeviceIdArray.length === 0) return null;
-    else return sessionsByDeviceIdArray[0];
+    if (!sessionsByDeviceIdArray) return null;
+    else return sessionsByDeviceIdArray;
   }
 
   async deleteDeviceSession(refreshToken: string): Promise<void> {
@@ -65,7 +65,7 @@ export class DevicesService {
     const issuedAt = extractIssueAtFromRefreshToken(refreshToken);
     const expiresAt = extractExpiresDateFromRefreshToken(refreshToken);
     if (userId && deviceId && issuedAt && deviceName && expiresAt) {
-      const newInput: Omit<DevicesSecuritySessionType, 'deviceSessionId'> = {
+      const newInput: Omit<DevicesSecuritySessionType, 'id'> = {
         issuedAt,
         deviceId: deviceId.toString(),
         ip,

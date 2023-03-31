@@ -1,5 +1,5 @@
 export type DevicesSecuritySessionType = {
-  deviceSessionId: number;
+  id: number;
   issuedAt: string;
   deviceId: string;
   ip: string;

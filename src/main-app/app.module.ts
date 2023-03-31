@@ -9,10 +9,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DeviceSessionModule } from '../features/public-API/devices/module/device-session.module';
 import { User } from '../features/SA-API/users/entities/user.entity';
 
-let urlSQL = process.env.POSTGRES_URL;
+let urlSQL: string;
 if (process.env.dev === 'local1') {
   urlSQL = process.env.POSTGRES_URL2;
   console.log('localDB');
+} else {
+  urlSQL = process.env.POSTGRES_URL;
+  console.log('cloudDB');
 }
 
 @Module({
