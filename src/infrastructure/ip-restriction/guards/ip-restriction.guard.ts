@@ -24,7 +24,7 @@ export class IpRestrictionGuard implements CanActivate {
     const url = request.url;
     const ip = request.ip;
 
-    const time = new Date(new Date().getTime() - 10000);
+    const time = new Date(new Date().getTime() - 11500);
 
     const inputCount = await this.ipRestrictionRepo
       .createQueryBuilder()
