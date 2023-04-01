@@ -15,13 +15,12 @@ export class BlogsRepository {
 
   async deleteBlogById(blogId: string) {
     try {
-      await this.dataSource.query(
-        `
-    UPDATE public."Blogs"
-    SET "IsDeleted"=true
-    WHERE "BlogId" = $1;`,
-        [blogId],
-      );
+      await this.blogsRepo
+        .createQueryBuilder()
+        .update(Blog)
+        .set({ isDeleted: true })
+        .where('id = :blogId', { blogId })
+        .execute();
     } catch (error) {
       return null;
     }
@@ -37,18 +36,16 @@ export class BlogsRepository {
   }
 
   async updateBlog(blogId: string, updateBlogDTO: UpdateBlogDto) {
-    await this.dataSource.query(
-      `
-    UPDATE public."Blogs"
-    SET "BlogName"=$1, "Description"=$2, "WebsiteUrl"=$3
-    WHERE "BlogId" = $4;`,
-      [
-        updateBlogDTO.name,
-        updateBlogDTO.description,
-        updateBlogDTO.websiteUrl,
-        blogId,
-      ],
-    );
+    await this.blogsRepo
+      .createQueryBuilder()
+      .update(Blog)
+      .set({
+        blogName: updateBlogDTO.name,
+        description: updateBlogDTO.description,
+        websiteUrl: updateBlogDTO.websiteUrl,
+      })
+      .where('id = :blogId', { blogId })
+      .execute();
   }
 
   async checkUserInBanListForBlog(
