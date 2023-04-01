@@ -49,8 +49,8 @@ export class AuthController {
   @HttpCode(204)
   @UseGuards(
     IpRestrictionGuard,
-    CheckDuplicatedEmailGuard,
-    CheckDuplicatedLoginGuard,
+    // CheckDuplicatedEmailGuard,
+    // CheckDuplicatedLoginGuard,
   )
   async registration(@Body() inputModel: CreateUserDto): Promise<HttpStatus> {
     const newUserIdAndConfirmCode = await this.usersService.createUser(
