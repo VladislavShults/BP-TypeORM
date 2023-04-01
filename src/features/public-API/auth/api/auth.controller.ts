@@ -32,6 +32,7 @@ import { Cookies } from '../decorators/cookies.decorator';
 import { CheckRefreshTokenInCookie } from '../guards/checkRefreshTokenInCookie';
 import { DevicesService } from '../../devices/application/devices.service';
 import { JWTAuthRefreshTokenGuard } from '../guards/JWT-auth-RefreshTokenGuard';
+import { IpRestrictionGuard } from '../../../../infrastructure/ip-restriction/guards/ip-restriction.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -47,7 +48,7 @@ export class AuthController {
   @Post('registration')
   @HttpCode(204)
   @UseGuards(
-    // IpRestrictionGuard,
+    IpRestrictionGuard,
     CheckDuplicatedEmailGuard,
     CheckDuplicatedLoginGuard,
   )
@@ -55,7 +56,7 @@ export class AuthController {
     const newUserIdAndConfirmCode = await this.usersService.createUser(
       inputModel,
     );
-    this.emailService.sendEmailRecoveryCode(
+    await this.emailService.sendEmailRecoveryCode(
       inputModel.email,
       newUserIdAndConfirmCode.confirmationCode,
     );
@@ -63,7 +64,7 @@ export class AuthController {
   }
 
   @Post('registration-confirmation')
-  // @UseGuards(IpRestrictionGuard)
+  @UseGuards(IpRestrictionGuard)
   @HttpCode(204)
   async registrationConfirmation(
     @Body()
@@ -81,7 +82,7 @@ export class AuthController {
   }
 
   @Post('registration-email-resending')
-  // @UseGuards(IpRestrictionGuard)
+  @UseGuards(IpRestrictionGuard)
   @HttpCode(204)
   async registrationEmailResending(
     @Body() inputModel: RegistrationEmailResendingAuthDto,
@@ -96,16 +97,16 @@ export class AuthController {
       inputModel.email,
     );
 
-    this.emailService.sendEmailRecoveryCode(inputModel.email, confirmationCode);
+    await this.emailService.sendEmailRecoveryCode(
+      inputModel.email,
+      confirmationCode,
+    );
     return;
   }
 
   @Post('login')
   @HttpCode(200)
-  @UseGuards(
-    // IpRestrictionGuard,
-    CheckUserAndHisPasswordInDB,
-  )
+  @UseGuards(IpRestrictionGuard, CheckUserAndHisPasswordInDB)
   async login(
     @Body() inputModel: LoginAuthDto,
     @Request() req,
@@ -118,11 +119,11 @@ export class AuthController {
 
     const newAccessToken = await this.authService.createAccessToken(
       user.userId.toString(),
-      '30000000',
+      '10000',
     );
     const newRefreshToken = await this.authService.createRefreshToken(
       user.userId.toString(),
-      '200000',
+      '20000',
     );
     await this.devicesService.saveDeviceInputInDB(
       newRefreshToken,
@@ -133,7 +134,7 @@ export class AuthController {
       .cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: true,
-        maxAge: 200 * 1000,
+        maxAge: 20 * 1000,
       })
       .status(200)
       .json({ accessToken: newAccessToken });
@@ -163,12 +164,12 @@ export class AuthController {
 
     const newAccessToken = await this.authService.createAccessToken(
       userIdFromRefreshToken.toString(),
-      '300000',
+      '10000',
     );
     const newRefreshToken = await this.jwtService.createRefreshJWT(
       userIdFromRefreshToken.toString(),
       deviceId.toString(),
-      '200000',
+      '20000',
     );
     await this.devicesService.changeRefreshTokenInDeviceSession(
       oldRefreshToken,
@@ -179,14 +180,14 @@ export class AuthController {
       .cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: true,
-        maxAge: 200 * 1000,
+        maxAge: 20 * 1000,
       })
       .status(200)
       .json({ accessToken: newAccessToken });
   }
 
   @Post('password-recovery')
-  // @UseGuards(IpRestrictionGuard)
+  @UseGuards(IpRestrictionGuard)
   @HttpCode(204)
   async passwordRecovery(@Body() inputModel: EmailAuthDto) {
     const email = inputModel.email;
@@ -198,7 +199,7 @@ export class AuthController {
   }
 
   @Post('new-password')
-  // @UseGuards(IpRestrictionGuard)
+  @UseGuards(IpRestrictionGuard)
   @HttpCode(204)
   async newPassword(@Body() inputModel: NewPasswordAuthDto) {
     const userByConfirmationCode =
