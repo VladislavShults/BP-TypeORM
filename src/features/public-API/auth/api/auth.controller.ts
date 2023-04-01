@@ -56,7 +56,7 @@ export class AuthController {
     const newUserIdAndConfirmCode = await this.usersService.createUser(
       inputModel,
     );
-    await this.emailService.sendEmailRecoveryCode(
+    this.emailService.sendEmailRecoveryCode(
       inputModel.email,
       newUserIdAndConfirmCode.confirmationCode,
     );
@@ -97,10 +97,7 @@ export class AuthController {
       inputModel.email,
     );
 
-    await this.emailService.sendEmailRecoveryCode(
-      inputModel.email,
-      confirmationCode,
-    );
+    this.emailService.sendEmailRecoveryCode(inputModel.email, confirmationCode);
     return;
   }
 
