@@ -13,10 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './models/create-user.dto';
-import {
-  ViewUsersTypeWithPagination,
-  ViewUserType,
-} from '../types/users.types';
+import { ViewUsersTypeWithPagination } from '../types/users.types';
 import { UsersService } from '../application/users.servive';
 import { UsersQueryRepository } from './users.query.repository';
 import { QueryUserDto } from './models/query-user.dto';

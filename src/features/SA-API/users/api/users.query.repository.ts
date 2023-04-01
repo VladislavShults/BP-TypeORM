@@ -24,10 +24,11 @@ export class UsersQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'ASC' | 'DESC' =
-      (query.sortDirection.toUpperCase() as 'ASC' | 'DESC') || 'DESC';
     const searchLoginTerm: string | null = query.searchLoginTerm || '';
     const searchEmailTerm: string | null = query.searchEmailTerm || '';
+    let sortDirection: 'ASC' | 'DESC' = 'DESC';
+    if (query.sortDirection)
+      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
     let stringWhere =
       'LOWER(login) like :loginTerm AND "isDeleted" = false OR (Lower(email) like :emailTerm AND "isDeleted" = false)';
