@@ -18,13 +18,14 @@ export type BannedUsersForBlogViewType = {
 };
 
 export type BlogDBType = {
-  id: number;
-  name: string;
+  id: string;
+  blogName: string;
   description: string;
   websiteUrl: string;
   createdAt: Date;
   userId: string;
   isBanned: boolean;
+  isDeleted: boolean;
   banDate: Date;
   isMembership: boolean;
 };

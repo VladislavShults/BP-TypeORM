@@ -13,13 +13,17 @@ import {
   mapBlogByIdWithUserId,
 } from '../helpers/mapBlogByIdToViewModel';
 import { QueryBannedUsersDto } from '../../../bloggers-API/users/api/models/query-banned-users.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { QueryBlogDto } from './models/query-blog.dto';
+import { Blog } from '../entities/blog.entity';
 
 @Injectable()
 export class BlogsQueryRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Blog) private blogsRepo: Repository<Blog>,
+  ) {}
 
   async findBlogById(
     blogId: string,
@@ -160,23 +164,24 @@ export class BlogsQueryRepository {
 
   private async getBlogByIdDBType(blogId: string, isBanned?: boolean) {
     let stringWhere =
-      'WHERE "BlogId" = $1 AND "IsDeleted" = false AND "IsBanned" = false;';
+      'id = :blogId AND "isDeleted" = false AND "isBanned" = false;';
     if (isBanned) {
-      stringWhere = 'WHERE "BlogId" = $1 AND "IsDeleted" = false;';
+      stringWhere = 'id = :blogId AND "isDeleted" = false;';
     }
 
     try {
-      const array = await this.dataSource.query(
-        `
-    SELECT "BlogId" as "id", "BlogName" as "name", "Description" as "description", "IsMembership" as "isMembership",
-            "WebsiteUrl" as "websiteUrl", "CreatedAt" as "createdAt", "UserId" as "userId", "IsBanned" as "isBanned"
-    FROM public."Blogs"
-    ${stringWhere}`,
-        [blogId],
-      );
-
-      if (array.length === 0) return null;
-      else return array[0];
+      //   const blog = await this.dataSource.query(
+      //     `
+      // SELECT "BlogId" as "id", "BlogName" as "name", "Description" as "description", "IsMembership" as "isMembership",
+      //         "WebsiteUrl" as "websiteUrl", "CreatedAt" as "createdAt", "UserId" as "userId", "IsBanned" as "isBanned"
+      // FROM public."Blogs"
+      // ${stringWhere}`,
+      //     [blogId],
+      //   );
+      return this.blogsRepo
+        .createQueryBuilder()
+        .where(stringWhere, { blogId })
+        .getOne();
     } catch (error) {
       return null;
     }

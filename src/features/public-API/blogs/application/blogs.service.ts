@@ -5,6 +5,7 @@ import { CreateBlogDto } from '../api/models/create-blog.dto';
 import { UserDBType } from '../../../SA-API/users/types/users.types';
 import { BanUserForBlogDto } from '../../../bloggers-API/users/api/models/ban-user-for-blog.dto';
 import { BlogsQueryRepository } from '../api/blogs.query.repository';
+import { BlogDBType } from '../types/blogs.types';
 
 @Injectable()
 export class BlogsService {
@@ -25,7 +26,18 @@ export class BlogsService {
     createBlogDTO: CreateBlogDto,
     user: UserDBType,
   ): Promise<string> {
-    return this.blogsRepository.createBlog(createBlogDTO, user);
+    const blog: Omit<BlogDBType, 'id'> = {
+      blogName: createBlogDTO.name,
+      description: createBlogDTO.description,
+      websiteUrl: createBlogDTO.websiteUrl,
+      createdAt: new Date(),
+      isDeleted: false,
+      userId: user.id.toString(),
+      isBanned: false,
+      banDate: null,
+      isMembership: false,
+    };
+    return this.blogsRepository.createBlog(blog);
   }
 
   // async bindUserToBlog(blog: BlogDBType, user: UserDBType) {

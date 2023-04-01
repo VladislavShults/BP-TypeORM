@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { BannedUsersForBlogDBType } from '../types/blogs.types';
-import { UserDBType } from '../../../SA-API/users/types/users.types';
-import { CreateBlogDto } from '../api/models/create-blog.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { BannedUsersForBlogDBType, BlogDBType } from '../types/blogs.types';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UpdateBlogDto } from '../api/models/update-blog.dto';
 import { BanUserForBlogDto } from '../../../bloggers-API/users/api/models/ban-user-for-blog.dto';
+import { Blog } from '../entities/blog.entity';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Blog) private blogsRepo: Repository<Blog>,
+  ) {}
 
   async deleteBlogById(blogId: string) {
     try {
@@ -23,26 +25,6 @@ export class BlogsRepository {
     } catch (error) {
       return null;
     }
-  }
-
-  async createBlog(
-    createBlogDto: CreateBlogDto,
-    user: UserDBType,
-  ): Promise<string> {
-    const blogId = await this.dataSource.query(
-      `
-    INSERT INTO public."Blogs"(
-        "BlogName", "Description", "WebsiteUrl", "UserId")
-    VALUES ($1, $2, $3, $4)
-    RETURNING "BlogId"  as "blogId"`,
-      [
-        createBlogDto.name,
-        createBlogDto.description,
-        createBlogDto.websiteUrl,
-        user.id,
-      ],
-    );
-    return blogId[0].blogId;
   }
 
   async removeUserIdFromBannedListBlogs(userId: string, blogId: string) {
@@ -120,5 +102,10 @@ export class BlogsRepository {
     } catch (error) {
       return null;
     }
+  }
+
+  async createBlog(blog: Omit<BlogDBType, 'id'>): Promise<string> {
+    const newBlog = await this.blogsRepo.save(blog);
+    return newBlog.id;
   }
 }

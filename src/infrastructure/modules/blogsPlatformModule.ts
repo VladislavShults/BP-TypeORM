@@ -39,6 +39,8 @@ import { IpRestrictionModule } from '../../features/ip-restriction/module/ip-res
 import { IpRestrictionHttpModule } from '../../features/ip-restriction/module/ip-restriction-http.module';
 import { DeviceSessionModule } from '../../features/public-API/devices/module/device-session.module';
 import { DeviceSessionHttpModule } from '../../features/public-API/devices/module/device-session-http.module';
+import { BlogsModule } from '../../features/public-API/blogs/module/blog.module';
+import { BlogHttpModule } from '../../features/public-API/blogs/module/blog-http.module';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import { DeviceSessionHttpModule } from '../../features/public-API/devices/modul
     IpRestrictionHttpModule,
     DeviceSessionModule,
     DeviceSessionHttpModule,
+    BlogsModule,
+    BlogHttpModule,
   ],
   controllers: [
     BlogsController,
