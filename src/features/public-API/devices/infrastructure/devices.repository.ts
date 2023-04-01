@@ -68,7 +68,12 @@ export class DeviceRepository {
       await this.deviceRepo
         .createQueryBuilder()
         .update(DeviceSession)
-        .set({ ip, issuedAt: issuedAtNewToken, expiresAt: expiresAtNewToken })
+        .set({
+          ip,
+          issuedAt: issuedAtNewToken,
+          expiresAt: expiresAtNewToken,
+          lastActiveDate: new Date(),
+        })
         .where(
           '"issuedAt" = :issuedAtOldToken AND "userId" = :userIdOldToken',
           { issuedAtOldToken, userIdOldToken },
