@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-  BannedUsersForBlogDBType,
   BannedUsersForBlogViewType,
   ViewBannedUsersForBlogWithPaginationType,
   ViewBlogsTypeWithPagination,
@@ -16,12 +15,15 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { QueryBlogDto } from './models/query-blog.dto';
 import { Blog } from '../entities/blog.entity';
+import { BannedUsersForBlog } from '../../../bloggers-API/users/entities/bannedUsersForBlog.entity';
 
 @Injectable()
 export class BlogsQueryRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Blog) private blogsRepo: Repository<Blog>,
+    @InjectRepository(BannedUsersForBlog)
+    private bannedUsersForBlogRepo: Repository<BannedUsersForBlog>,
   ) {}
 
   async findBlogById(
@@ -96,29 +98,51 @@ export class BlogsQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || 'banDate';
-    const sortDirection = query.sortDirection || 'desc';
+    let sortDirection: 'ASC' | 'DESC' = 'DESC';
+    if (query.sortDirection)
+      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
-    let bannedUsersDBType: BannedUsersForBlogDBType[] = [];
-    let totalCountArr = [];
+    let bannedUsers: (BannedUsersForBlog & { login: string })[] = [];
+    let totalCount = 0;
+    const loginTerm = '%' + searchLoginTerm.toLocaleLowerCase() + '%';
 
     try {
-      bannedUsersDBType = await this.dataSource.query(
-        `
-      SELECT b."UserId" as "userId", u."Login" as "login", b."IsBanned" as "isBanned", "BanDate" as "banDate",
-            "BanReason" as "banReason", "BlogId" as "blogId"
-      FROM public."BannedUsersForBlog" b
-      JOIN public."Users" u
-      ON b."UserId" = u."UserId"
-      WHERE b."BlogId" = $1
-      ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
-      LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};`,
-        [blogId],
-      );
+      // bannedUsersDBType = await this.dataSource.query(
+      //   `
+      // SELECT b."UserId" as "userId", u."Login" as "login", b."IsBanned" as "isBanned", "BanDate" as "banDate",
+      //       "BanReason" as "banReason", "BlogId" as "blogId"
+      // FROM public."BannedUsersForBlog" b
+      // JOIN public."Users" u
+      // ON b."UserId" = u."UserId"
+      // WHERE b."BlogId" = $1
+      // ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
+      // LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};`,
+      //   [blogId],
+      // );
+      bannedUsers = await this.bannedUsersForBlogRepo
+        .createQueryBuilder('bu')
+        .innerJoinAndSelect('bu.user', 'u')
+        .select([
+          'bu."userId"',
+          'u.login',
+          'bu."isBanned"',
+          'bu."banDate"',
+          'bu."banReason"',
+          'bu."blogId"',
+        ])
+        .where('bu."blogId" = :blogId AND LOWER(u.login) like :loginTerm', {
+          blogId,
+          loginTerm,
+        })
+        .limit(pageSize)
+        .orderBy('"' + sortBy + '"', sortDirection)
+        .offset((pageNumber - 1) * pageSize)
+        .getRawMany();
     } catch (error) {
-      bannedUsersDBType = [];
+      bannedUsers = [];
     }
 
-    const items: BannedUsersForBlogViewType[] = bannedUsersDBType.map((b) => ({
+    const items: BannedUsersForBlogViewType[] = bannedUsers.map((b) => ({
       id: b.userId.toString(),
       login: b.login,
       banInfo: {
@@ -129,24 +153,30 @@ export class BlogsQueryRepository {
     }));
 
     try {
-      totalCountArr = await this.dataSource.query(
-        `
-    SELECT count(*)
-      FROM public."BannedUsersForBlog" b
-      JOIN public."Users" u
-      ON b."UserId" = u."UserId"
-      WHERE b."BlogId" = $1 AND LOWER ("Login") LIKE $2`,
-        [blogId, '%' + searchLoginTerm.toLocaleLowerCase() + '%'],
-      );
-    } catch (error) {
-      totalCountArr[0].count = 0;
-    }
+      totalCount = await this.bannedUsersForBlogRepo
+        .createQueryBuilder('bu')
+        .innerJoinAndSelect('bu.user', 'u')
+        .where('bu."blogId" = :blogId AND LOWER(u.login) like :loginTerm', {
+          blogId,
+          loginTerm,
+        })
+        .getCount();
+      //   totalCountArr = await this.dataSource.query(
+      //     `
+      // SELECT count(*)
+      //   FROM public."BannedUsersForBlog" b
+      //   JOIN public."Users" u
+      //   ON b."UserId" = u."UserId"
+      //   WHERE b."BlogId" = $1 AND LOWER ("Login") LIKE $2`,
+      //     [blogId, '%' + searchLoginTerm.toLocaleLowerCase() + '%'],
+      //   );
+    } catch (error) {}
 
     return {
-      pagesCount: Math.ceil(totalCountArr[0].count / pageSize),
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: Number(totalCountArr[0].count),
+      totalCount: Number(totalCount),
       items,
     };
   }
