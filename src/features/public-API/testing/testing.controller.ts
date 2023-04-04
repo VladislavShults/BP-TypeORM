@@ -11,12 +11,14 @@ export class TestingController {
     await this.dataSource.query(`DELETE FROM public."ban_info"`);
     await this.dataSource.query(`DELETE FROM public."email_confirmation"`);
     await this.dataSource.query(`DELETE FROM public."device_session"`);
-    // await this.dataSource.query(`DELETE FROM public."CommentsLikesOrDislike"`);
-    // await this.dataSource.query(`DELETE FROM public."PostsLikesOrDislike"`);
-    // await this.dataSource.query(`DELETE FROM public."Comments"`);
-    // await this.dataSource.query(`DELETE FROM public."Posts"`);
-    // await this.dataSource.query(`DELETE FROM public."BannedUsersForBlog"`);
-    // await this.dataSource.query(`DELETE FROM public."Blogs"`);
+    await this.dataSource.query(
+      `DELETE FROM public."comments_likes_or_dislike"`,
+    );
+    await this.dataSource.query(`DELETE FROM public."posts_likes_or_dislike"`);
+    await this.dataSource.query(`DELETE FROM public."comment"`);
+    await this.dataSource.query(`DELETE FROM public."post"`);
+    await this.dataSource.query(`DELETE FROM public."banned_users_for_blog"`);
+    await this.dataSource.query(`DELETE FROM public."blog"`);
     await this.dataSource.query(`DELETE FROM public."user"`);
 
     return;
