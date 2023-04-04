@@ -1,22 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePostBySpecificBlogDto } from '../../blogs/api/models/create-postBySpecificBlog.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UpdatePostByBlogIdDto } from '../../../bloggers-API/blogs/api/models/update-postByBlogId.dto';
+import { PostDBType } from '../types/posts.types';
+import { Post } from '../entities/post.entity';
 
 @Injectable()
 export class PostsRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Post) private postsRepo: Repository<Post>,
+  ) {}
 
   async deletePostByIdForBlogId(postId: string, blogId: string): Promise<void> {
     try {
-      await this.dataSource.query(
-        `
-    UPDATE public."Posts"
-    SET  "IsDeleted"=true
-    WHERE "PostId"=$1 AND "BlogId"=$2;`,
-        [postId, blogId],
-      );
+      await this.postsRepo
+        .createQueryBuilder()
+        .update(Post)
+        .set({ isDeleted: true })
+        .where('id = :postId AND "blogId" = :blogId', { postId, blogId })
+        .execute();
     } catch (error) {
       return null;
     }
@@ -32,43 +35,23 @@ export class PostsRepository {
     );
   }
 
-  async createPost(
-    blogId: string,
-    inputModel: CreatePostBySpecificBlogDto,
-    userId: string,
-  ): Promise<string> {
-    const idArr = await this.dataSource.query(
-      `
-    INSERT INTO public."Posts"(
-            "Title", "ShortDescription", "Content", "BlogId", "userId")
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING "PostId" as "id";`,
-      [
-        inputModel.title,
-        inputModel.shortDescription,
-        inputModel.content,
-        blogId,
-        userId,
-      ],
-    );
-    return idArr[0].id;
+  async createPost(post: Omit<PostDBType, 'id'>): Promise<string> {
+    const newPost = await this.postsRepo.save(post);
+    return newPost.id;
   }
 
   async updatePost(postId: string, inputModel: UpdatePostByBlogIdDto) {
     try {
-      await this.dataSource.query(
-        `
-    UPDATE public."Posts"
-    SET "Title"=$1, "ShortDescription"=$2, "Content"=$3
-    WHERE "PostId" = $4
-    AND "IsDeleted" = false;`,
-        [
-          inputModel.title,
-          inputModel.shortDescription,
-          inputModel.content,
-          postId,
-        ],
-      );
+      await this.postsRepo
+        .createQueryBuilder()
+        .update(Post)
+        .set({
+          title: inputModel.title,
+          shortDescription: inputModel.shortDescription,
+          content: inputModel.content,
+        })
+        .where('id = :postId', { postId })
+        .execute();
     } catch (error) {
       return null;
     }

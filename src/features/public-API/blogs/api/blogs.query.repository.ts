@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import {
   BannedUsersForBlogDBType,
   BannedUsersForBlogViewType,
-  BlogDBType,
   ViewBannedUsersForBlogWithPaginationType,
   ViewBlogsTypeWithPagination,
   ViewBlogType,
@@ -48,53 +47,43 @@ export class BlogsQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection = query.sortDirection || 'desc';
+    let sortDirection: 'ASC' | 'DESC' = 'DESC';
+    if (query.sortDirection)
+      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
     let stringWhere =
-      'WHERE b."IsBanned" = false AND b."IsDeleted" = false AND LOWER ("BlogName") LIKE $1';
+      '"isBanned" = false AND "isDeleted" = false AND LOWER("blogName") like :searchName';
 
-    const arrayParam = ['%' + searchNameTerm.toLocaleLowerCase() + '%'];
+    let params: { searchName: string; userId?: string } = {
+      searchName: '%' + searchNameTerm.toLocaleLowerCase() + '%',
+    };
 
     if (userId) {
       stringWhere =
-        'WHERE b."IsBanned" = false AND b."IsDeleted" = false AND LOWER ("BlogName") LIKE $1 AND b."UserId" = $2';
-      arrayParam.push(userId);
+        '"isBanned" = false AND "isDeleted" = false AND LOWER("blogName") like :searchName AND "userId" = :userId';
+      params = {
+        searchName: '%' + searchNameTerm.toLocaleLowerCase() + '%',
+        userId,
+      };
     }
 
-    const itemsDB: BlogDBType[] = await this.dataSource.query(
-      `
-    SELECT "BlogId" as "id", "BlogName" as "name", "Description" as "description", "WebsiteUrl" as "websiteUrl",
-            b."CreatedAt" as "createdAt", b."IsMembership" as "isMembership"
-    FROM public."Blogs" b
-    JOIN public. "Users" u
-    ON b."UserId" = u."UserId"
-    JOIN public. "BanInfo" bi
-    ON b."UserId" = bi."UserId"
-    ${stringWhere}
-    ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
-    LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};`,
-      arrayParam,
-    );
+    const itemsDB = await this.blogsRepo
+      .createQueryBuilder('b')
+      .where(stringWhere, params)
+      .limit(pageSize)
+      .orderBy('"' + sortBy + '"', sortDirection)
+      .offset((pageNumber - 1) * pageSize)
+      .getManyAndCount();
 
-    const items = itemsDB.map((i) => mapBlog(i));
+    const items = itemsDB[0].map((i) => mapBlog(i));
 
-    const totalCount = await this.dataSource.query(
-      `
-    SELECT COUNT(*)
-    FROM public."Blogs" b
-    JOIN public. "Users" u
-    ON b."UserId" = u."UserId"
-    JOIN public. "BanInfo" bi
-    ON b."UserId" = bi."UserId"
-    ${stringWhere}`,
-      arrayParam,
-    );
+    const totalCount = itemsDB[1];
 
     return {
-      pagesCount: Math.ceil(totalCount[0].count / pageSize),
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize: pageSize,
-      totalCount: Number(totalCount[0].count),
+      totalCount: Number(totalCount),
       items,
     };
   }
@@ -170,14 +159,6 @@ export class BlogsQueryRepository {
     }
 
     try {
-      //   const blog = await this.dataSource.query(
-      //     `
-      // SELECT "BlogId" as "id", "BlogName" as "name", "Description" as "description", "IsMembership" as "isMembership",
-      //         "WebsiteUrl" as "websiteUrl", "CreatedAt" as "createdAt", "UserId" as "userId", "IsBanned" as "isBanned"
-      // FROM public."Blogs"
-      // ${stringWhere}`,
-      //     [blogId],
-      //   );
       return this.blogsRepo
         .createQueryBuilder()
         .where(stringWhere, { blogId })

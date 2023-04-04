@@ -92,13 +92,13 @@ export class BloggersBlogsController {
   ): Promise<ViewPostType> {
     const userId: string = req.user.id;
 
-    const createPostAndReturnId = await this.postsService.createPost(
+    const newPostId = await this.postsService.createPost(
       params.blogId,
       inputModel,
       userId,
     );
 
-    return await this.postsQueryRepository.getPostById(createPostAndReturnId);
+    return await this.postsQueryRepository.getPostById(newPostId);
   }
 
   @Put(':blogId/posts/:postId')

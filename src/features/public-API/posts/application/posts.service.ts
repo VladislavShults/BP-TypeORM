@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PostsRepository } from '../infrastructure/posts.repository';
 import { UpdatePostByBlogIdDto } from '../../../bloggers-API/blogs/api/models/update-postByBlogId.dto';
 import { CreatePostBySpecificBlogDto } from '../../blogs/api/models/create-postBySpecificBlog.dto';
+import { PostDBType } from '../types/posts.types';
 
 @Injectable()
 export class PostsService {
@@ -44,6 +45,17 @@ export class PostsService {
     inputModel: CreatePostBySpecificBlogDto,
     userId: string,
   ): Promise<string> {
-    return await this.postsRepository.createPost(blogId, inputModel, userId);
+    const post: Omit<PostDBType, 'id'> = {
+      title: inputModel.title,
+      shortDescription: inputModel.shortDescription,
+      content: inputModel.content,
+      createdAt: new Date(),
+      isDeleted: false,
+      isBanned: false,
+      userId,
+      blogId,
+      newestLikes: [],
+    };
+    return await this.postsRepository.createPost(post);
   }
 }

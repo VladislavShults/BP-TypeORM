@@ -6,34 +6,27 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { Post } from '../entities/post.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CheckPostInDBGuard implements CanActivate {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(@InjectRepository(Post) private postsRepo: Repository<Post>) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
 
-    const params = request.params;
+    const postId = request.params.postId;
 
-    let postArray = [];
+    const post = await this.postsRepo
+      .createQueryBuilder()
+      .where('id = :postId AND "isDeleted" = false AND "isBanned" = false', {
+        postId,
+      })
+      .getOne();
 
-    try {
-      postArray = await this.dataSource.query(
-        `
-    SELECT "PostId", "IsDeleted"
-    FROM public."Posts"
-    WHERE "PostId" = $1 AND "IsDeleted" = false AND "IsBanned" = false`,
-        [params.postId],
-      );
-    } catch (error) {
-      postArray = [];
-    }
-
-    if (postArray.length === 0)
-      throw new HttpException('POST NOT FOUND', HttpStatus.NOT_FOUND);
+    if (!post) throw new HttpException('POST NOT FOUND', HttpStatus.NOT_FOUND);
     return true;
   }
 }

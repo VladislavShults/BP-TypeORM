@@ -4,11 +4,11 @@ export type PostDBType = {
   shortDescription: string;
   content: string;
   blogId: string;
-  blogName: string;
   createdAt: Date;
   userId: string;
-  likesCount: number;
-  dislikesCount: number;
+  isDeleted: boolean;
+  isBanned: boolean;
+  newestLikes: NewestLikesType[] | [];
 };
 
 export type NewestLikesType = {

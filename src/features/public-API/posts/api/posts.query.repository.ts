@@ -5,12 +5,16 @@ import {
 } from '../types/posts.types';
 import { mapPost } from '../helpers/mapPostDBToViewModel';
 import { QueryGetPostsByBlogIdDto } from '../../blogs/api/models/query-getPostsByBlogId.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Post } from '../entities/post.entity';
 
 @Injectable()
 export class PostsQueryRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Post) private postsRepo: Repository<Post>,
+  ) {}
 
   async getPostById(
     postId: string,
@@ -23,31 +27,31 @@ export class PostsQueryRepository {
 
     if (userId) {
       stringWhere =
-        ', (SELECT "Status" as "myStatus" FROM public."PostsLikesOrDislike" pl WHERE pl."PostId" = p."PostId" AND pl."UserId" = $2) as "myStatus"';
+        ', (SELECT "status" as "myStatus" FROM public."posts_likes_or_dislike" pl WHERE pl."postId" = p."id" AND pl."userId" = $2) as "myStatus"';
       params = [postId, userId];
     }
 
     try {
-      postDBType = await this.dataSource.query(
+      postDBType = await this.postsRepo.query(
         `
-    SELECT p."PostId" as "id", p."Title" as "title", p."ShortDescription" as "shortDescription", p."NewestLikes" as "newestLikes", 
-           p."Content" as "content", p."BlogId" as "blogId", b."BlogName" as "blogName", p."CreatedAt" as "createdAt", 
+    SELECT p."id", p."title", p."shortDescription", p."newestLikes", 
+           p."content", p."blogId", b."blogName", p."createdAt", 
         (SELECT COUNT(*)
-           FROM public."PostsLikesOrDislike" pl
-           JOIN public."BanInfo" b
-           ON pl."UserId" = b."UserId"
-           WHERE pl."Status" = 'Like' AND pl."PostId" = p."PostId" AND b."IsBanned" = false) as "likesCount",
+           FROM public."posts_likes_or_dislike" pl
+           JOIN public."ban_info" b
+           ON pl."userId" = b."userId"
+           WHERE pl."status" = 'Like' AND pl."postId" = p."id" AND b."isBanned" = false) as "likesCount",
         (SELECT COUNT(*)
-           FROM public."PostsLikesOrDislike" pl
-           JOIN public."BanInfo" b
-           ON pl."UserId" = b."UserId"
-           WHERE pl."Status" = 'Dislike' AND pl."PostId" = p."PostId" AND b."IsBanned" = false) as "dislikesCount"
+           FROM public."posts_likes_or_dislike" pl
+           JOIN public."ban_info" b
+           ON pl."userId" = b."userId"
+           WHERE pl."status" = 'Dislike' AND pl."postId" = p."id" AND b."isBanned" = false) as "dislikesCount"
            ${stringWhere}
-    FROM public."Posts" p
-    JOIN public."Blogs" b
-    ON p."BlogId" = b."BlogId"
-    WHERE p."IsDeleted" = false AND p."IsBanned" = false
-    AND p."PostId" = $1`,
+    FROM public."post" p
+    JOIN public."blog" b
+    ON p."blogId" = b."id"
+    WHERE p."isDeleted" = false AND p."isBanned" = false
+    AND p."id" = $1`,
         params,
       );
     } catch (error) {

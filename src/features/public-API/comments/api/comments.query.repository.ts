@@ -8,12 +8,17 @@ import { mapComment } from '../helpers/mapCommentDBTypeToViewModel';
 import { QueryPostDto } from '../../posts/api/models/query-post.dto';
 import { mapCommentDBTypeToAllCommentForAllPosts } from '../helpers/mapCommentDBTypeToAllCommentForAllPosts';
 import { QueryCommentDto } from './models/query-comment.dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { BannedUsersForBlog } from '../../../bloggers-API/users/entities/bannedUsersForBlog.entity';
 
 @Injectable()
 export class CommentsQueryRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(BannedUsersForBlog)
+    private bannedUsersForBlogRepo: Repository<BannedUsersForBlog>,
+  ) {}
 
   async getCommentById(
     commentId: string,
@@ -132,21 +137,29 @@ export class CommentsQueryRepository {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
     const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
+    let sortDirection: 'ASC' | 'DESC' = 'DESC';
+    if (query.sortDirection)
+      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
-    const idsBannedUsersForBlogsThisUser: { id: number }[] =
-      await this.dataSource.query(
-        `
-    SELECT bu."UserId" as "id"
-    FROM public."BannedUsersForBlog" bu
-    JOIN public."Blogs" b
-    ON bu."BlogId" = b."BlogId"
-    WHERE b."UserId" = $1`,
-        [userId],
-      );
+    const idsBannedUsersForBlogsThisUser =
+      //   await this.dataSource.query(
+      //     `
+      // SELECT bu."UserId" as "id"
+      // FROM public."BannedUsersForBlog" bu
+      // JOIN public."Blogs" b
+      // ON bu."BlogId" = b."BlogId"
+      // WHERE b."UserId" = $1`,
+      //     [userId],
+      //   );
+      await this.bannedUsersForBlogRepo
+        .createQueryBuilder('bu')
+        .leftJoin('bu.blog', 'b')
+        .select(['bu."userId"'])
+        .where('b."userId" = :userId', { userId })
+        .getMany();
 
     const bannedIdsArray = idsBannedUsersForBlogsThisUser.map((i) => {
-      return i.id;
+      return i.userId;
     });
 
     const bannedIds = bannedIdsArray.join();
@@ -156,33 +169,33 @@ export class CommentsQueryRepository {
     let params = [userId];
 
     if (bannedIdsArray.length !== 0) {
-      stringNotIn = 'AND c."UserId" NOT IN ($2)';
+      stringNotIn = 'AND c."userId" NOT IN ($2)';
       params = [userId, bannedIds];
     }
 
     const itemsDBType = await this.dataSource.query(
       `
-    SELECT c."CommentId" as "id", c."Content" as "content", c."UserId" as "userId", u."Login" as "userLogin",
-           c."CreatedAt" as "createdAt", c."PostId" as "postId", p."Title" as "title", p."BlogId" as "blogId",
-           b."BlogName" as "blogName",
+    SELECT c."id", c."content", c."userId", u."login" as "userLogin",
+           c."createdAt", c."postId", p."title", p."blogId",
+           b."blogName",
            (SELECT COUNT(*)
-                 FROM public."CommentsLikesOrDislike" cl
-                 WHERE "Status" = 'Like' AND cl."CommentId" = c."CommentId") as "likesCount",
+                 FROM public."comments_likes_or_dislike" cl
+                 WHERE "status" = 'Like' AND cl."commentId" = c."id") as "likesCount",
            (SELECT COUNT(*)
-                 FROM public."CommentsLikesOrDislike" cl
-                 WHERE "Status" = 'Dislike' AND cl."CommentId" = c."CommentId") as "dislikesCount",
-           (SELECT "Status" as "myStatus" 
-                 FROM public."CommentsLikesOrDislike" cl 
-                 WHERE cl."CommentId" = c."CommentId" 
-                 AND "UserId" = $1) as "myStatus"
-    FROM public."Comments" c
-    JOIN public."Users" u
-    ON c."UserId" = u."UserId"
-    JOIN public."Posts" p
-    ON c."PostId" = p."PostId"
-    JOIN public."Blogs" b
-    ON p."BlogId" = b."BlogId"
-    WHERE c."IsBanned" = false AND c."IsDeleted" = false AND b."UserId" = $1
+                 FROM public."comments_likes_or_dislike" cl
+                 WHERE "status" = 'Dislike' AND cl."commentId" = c."id") as "dislikesCount",
+           (SELECT "status" as "myStatus" 
+                 FROM public."comments_likes_or_dislike" cl 
+                 WHERE cl."commentId" = c."id" 
+                 AND "userId" = $1) as "myStatus"
+    FROM public."comment" c
+    JOIN public."user" u
+    ON c."userId" = u."id"
+    JOIN public."post" p
+    ON c."postId" = p."id"
+    JOIN public."blog" b
+    ON p."blogId" = b."id"
+    WHERE c."isBanned" = false AND c."isDeleted" = false AND b."userId" = $1
     ${stringNotIn}
     ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
     LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
@@ -198,14 +211,14 @@ export class CommentsQueryRepository {
     const totalCount = await this.dataSource.query(
       `
     SELECT COUNT(*)
-    FROM public."Comments" c
-    JOIN public."Users" u
-    ON c."UserId" = u."UserId"
-    JOIN public."Posts" p
-    ON c."PostId" = p."PostId"
-    JOIN public."Blogs" b
-    ON p."BlogId" = b."BlogId"
-    WHERE c."IsBanned" = false AND c."IsDeleted" = false AND b."UserId" = $1
+    FROM public."comment" c
+    JOIN public."user" u
+    ON c."userId" = u."id"
+    JOIN public."post" p
+    ON c."postId" = p."id"
+    JOIN public."blog" b
+    ON p."blogId" = b."id"
+    WHERE c."isBanned" = false AND c."isDeleted" = false AND b."userId" = $1
     ${stringNotIn}`,
       params,
     );

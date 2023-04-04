@@ -41,6 +41,16 @@ import { DeviceSessionModule } from '../../features/public-API/devices/module/de
 import { DeviceSessionHttpModule } from '../../features/public-API/devices/module/device-session-http.module';
 import { BlogsModule } from '../../features/public-API/blogs/module/blog.module';
 import { BlogHttpModule } from '../../features/public-API/blogs/module/blog-http.module';
+import { PostsModule } from '../../features/public-API/posts/module/post.module';
+import { PostHttpModule } from '../../features/public-API/posts/module/post-http.module';
+import { PostsLikesOrDislikeModule } from '../../features/public-API/likes/module/postsLikesOrDislike.module';
+import { PostsLikesOrDislikesHttpModule } from '../../features/public-API/likes/module/postsLikesOrDislikes-http.module';
+import { CommentHttpModule } from '../../features/public-API/comments/module/comment-http.module';
+import { CommentsModule } from '../../features/public-API/comments/module/comment.module';
+import { CommentsLikesOrDislikeModule } from '../../features/public-API/likes/module/commentsLikesOrDislike.module';
+import { CommentsLikesOrDislikesHttpModule } from '../../features/public-API/likes/module/commentsLikesOrDislikes-http.module';
+import { BannedUsersForBlogModule } from '../../features/bloggers-API/users/module/bannedUsersForBlog.module';
+import { BannedUsersForBlogHttpModule } from '../../features/bloggers-API/users/module/bannedUsersForBlog-http.module';
 
 @Module({
   imports: [
@@ -52,6 +62,16 @@ import { BlogHttpModule } from '../../features/public-API/blogs/module/blog-http
     DeviceSessionHttpModule,
     BlogsModule,
     BlogHttpModule,
+    PostsModule,
+    PostHttpModule,
+    PostsLikesOrDislikeModule,
+    PostsLikesOrDislikesHttpModule,
+    CommentsModule,
+    CommentHttpModule,
+    CommentsLikesOrDislikeModule,
+    CommentsLikesOrDislikesHttpModule,
+    BannedUsersForBlogModule,
+    BannedUsersForBlogHttpModule,
   ],
   controllers: [
     BlogsController,
