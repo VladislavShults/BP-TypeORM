@@ -124,7 +124,7 @@ export class BlogsQueryRepository {
         .innerJoinAndSelect('bu.user', 'u')
         .select([
           'bu."userId"',
-          'u.login',
+          'u.login as login',
           'bu."isBanned"',
           'bu."banDate"',
           'bu."banReason"',

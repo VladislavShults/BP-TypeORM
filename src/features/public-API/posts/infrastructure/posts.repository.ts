@@ -79,10 +79,12 @@ export class PostsRepository {
       bannedUsers = await this.bannedUsersForBlogRepo
         .createQueryBuilder('bu')
         .select(['bu."userId" as id'])
-        .leftJoinAndSelect('bu.blog', 'b')
+        .innerJoinAndMapMany('bu.post', Post, 'p', 'bu."blogId"= p."blogId"')
         .where('p.id = :postId', { postId })
-        .getMany();
-    } catch (error) {}
+        .getRawMany();
+    } catch (error) {
+      console.log(error);
+    }
 
     return bannedUsers;
   }
