@@ -153,16 +153,17 @@ export class BlogsQueryRepository {
 
   private async getBlogByIdDBType(blogId: string, isBanned?: boolean) {
     let stringWhere =
-      'id = :blogId AND "isDeleted" = false AND "isBanned" = false;';
+      'id = :blogId AND "isDeleted" = false AND "isBanned" = false';
     if (isBanned) {
-      stringWhere = 'id = :blogId AND "isDeleted" = false;';
+      stringWhere = 'id = :blogId AND "isDeleted" = false';
     }
-
     try {
-      return this.blogsRepo
+      const blog = await this.blogsRepo
         .createQueryBuilder()
         .where(stringWhere, { blogId })
         .getOne();
+
+      return blog;
     } catch (error) {
       return null;
     }
