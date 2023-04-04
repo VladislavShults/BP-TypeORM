@@ -1,16 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { BannedUsersForBlogDBType, BlogDBType } from '../types/blogs.types';
+import { BlogDBType } from '../types/blogs.types';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UpdateBlogDto } from '../api/models/update-blog.dto';
-import { BanUserForBlogDto } from '../../../bloggers-API/users/api/models/ban-user-for-blog.dto';
 import { Blog } from '../entities/blog.entity';
+import { BannedUsersForBlog } from '../../../bloggers-API/users/entities/bannedUsersForBlog.entity';
 
 @Injectable()
 export class BlogsRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Blog) private blogsRepo: Repository<Blog>,
+    @InjectRepository(BannedUsersForBlog)
+    private bannedUsersForBlogRepo: Repository<BannedUsersForBlog>,
   ) {}
 
   async deleteBlogById(blogId: string) {
@@ -27,12 +29,11 @@ export class BlogsRepository {
   }
 
   async removeUserIdFromBannedListBlogs(userId: string, blogId: string) {
-    await this.dataSource.query(
-      `
-    DELETE FROM public."BannedUsersForBlog"
-    WHERE "UserId" = $1 AND "BlogId" = $2;`,
-      [userId, blogId],
-    );
+    await this.bannedUsersForBlogRepo
+      .createQueryBuilder()
+      .delete()
+      .where('"userId" = : userId AND "blogId" = :blogId', { userId, blogId })
+      .execute();
   }
 
   async updateBlog(blogId: string, updateBlogDTO: UpdateBlogDto) {
@@ -64,27 +65,22 @@ export class BlogsRepository {
   async findUserInBanListForBlog(
     userId: string,
     blogId: string,
-  ): Promise<BannedUsersForBlogDBType> | null {
-    const userInBanListForBlog = await this.dataSource.query(
-      `
-    SELECT "UserId" as "userId", "IsBanned" as "isBanned", "BanDate" as "banDate", "BanReason" as "banReason", "BlogId" as "blogId"
-    FROM public."BannedUsersForBlog"
-    WHERE "UserId" = $1 AND "BlogId" = $2`,
-      [userId, blogId],
-    );
+  ): Promise<Blog> | null {
+    // const userInBanListForBlog = await this.dataSource.query(
+    //   `
+    // SELECT "UserId" as "userId", "IsBanned" as "isBanned", "BanDate" as "banDate", "BanReason" as "banReason", "BlogId" as "blogId"
+    // FROM public."BannedUsersForBlog"
+    // WHERE "UserId" = $1 AND "BlogId" = $2`,
+    //   [userId, blogId],
+    // );
+    const userInBanListForBlog = await this.blogsRepo
+      .createQueryBuilder()
+      .select(['"userId"', '"isBanned"', '"banDate"', '"banReason"'])
+      .where('"userId" = :userId AND "blogId" = :blogId', { userId, blogId })
+      .getOne();
 
-    if (userInBanListForBlog.length === 0) return null;
-    else return userInBanListForBlog[0];
-  }
-
-  async addUserToBanList(userId: string, inputModel: BanUserForBlogDto) {
-    await this.dataSource.query(
-      `
-    INSERT INTO public."BannedUsersForBlog"(
-        "UserId", "IsBanned", "BanReason", "BlogId")
-    VALUES ($1, $2, $3, $4);`,
-      [userId, inputModel.isBanned, inputModel.banReason, inputModel.blogId],
-    );
+    if (!userInBanListForBlog) return null;
+    else return userInBanListForBlog;
   }
 
   async banOrUnbanBlog(blogId: string, banStatus: boolean, date: Date | null) {
@@ -104,5 +100,9 @@ export class BlogsRepository {
   async createBlog(blog: Omit<BlogDBType, 'id'>): Promise<string> {
     const newBlog = await this.blogsRepo.save(blog);
     return newBlog.id;
+  }
+
+  async addUserToBanList(ban: Omit<BannedUsersForBlog, 'blog' | 'user'>) {
+    await this.bannedUsersForBlogRepo.save(ban);
   }
 }

@@ -6,6 +6,7 @@ import { UserDBType } from '../../../SA-API/users/types/users.types';
 import { BanUserForBlogDto } from '../../../bloggers-API/users/api/models/ban-user-for-blog.dto';
 import { BlogsQueryRepository } from '../api/blogs.query.repository';
 import { BlogDBType } from '../types/blogs.types';
+import { BannedUsersForBlog } from '../../../bloggers-API/users/entities/bannedUsersForBlog.entity';
 
 @Injectable()
 export class BlogsService {
@@ -54,7 +55,14 @@ export class BlogsService {
       );
 
     if (inputModel.isBanned && !userInBanListForBlog) {
-      await this.blogsRepository.addUserToBanList(userId, inputModel);
+      const ban: Omit<BannedUsersForBlog, 'blog' | 'user'> = {
+        userId,
+        blogId: inputModel.blogId,
+        isBanned: inputModel.isBanned,
+        banDate: new Date(),
+        banReason: inputModel.banReason,
+      };
+      await this.blogsRepository.addUserToBanList(ban);
       return;
     }
 
