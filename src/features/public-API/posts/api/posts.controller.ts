@@ -89,15 +89,14 @@ export class PostsController {
     if (userIsBannedForBlog)
       throw new HttpException('user', HttpStatus.FORBIDDEN);
 
-    const createCommentAndReturnId =
-      await this.commentsService.createCommentByPost(
-        params.postId,
-        inputModel,
-        user.id,
-      );
+    const newCommentId = await this.commentsService.createCommentByPost(
+      params.postId,
+      inputModel,
+      user.id,
+    );
 
     return await this.commentsQueryRepository.getCommentById(
-      createCommentAndReturnId.toString(),
+      newCommentId.toString(),
       user.id,
     );
   }

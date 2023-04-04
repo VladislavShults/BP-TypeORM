@@ -4,12 +4,15 @@ import { DataSource, Repository } from 'typeorm';
 import { UpdatePostByBlogIdDto } from '../../../bloggers-API/blogs/api/models/update-postByBlogId.dto';
 import { PostDBType } from '../types/posts.types';
 import { Post } from '../entities/post.entity';
+import { BannedUsersForBlog } from '../../../bloggers-API/users/entities/bannedUsersForBlog.entity';
 
 @Injectable()
 export class PostsRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Post) private postsRepo: Repository<Post>,
+    @InjectRepository(BannedUsersForBlog)
+    private bannedUsersForBlogRepo: Repository<BannedUsersForBlog>,
   ) {}
 
   async deletePostByIdForBlogId(postId: string, blogId: string): Promise<void> {
@@ -42,7 +45,7 @@ export class PostsRepository {
 
   async updatePost(postId: string, inputModel: UpdatePostByBlogIdDto) {
     try {
-      await this.postsRepo
+      const update = await this.postsRepo
         .createQueryBuilder()
         .update(Post)
         .set({
@@ -52,6 +55,7 @@ export class PostsRepository {
         })
         .where('id = :postId', { postId })
         .execute();
+      return update;
     } catch (error) {
       return null;
     }
@@ -63,15 +67,21 @@ export class PostsRepository {
     let bannedUsers = [];
 
     try {
-      bannedUsers = await this.dataSource.query(
-        `
-    SELECT bu."UserId" as "id"
-    FROM public."BannedUsersForBlog" bu
-    JOIN public."Posts" p
-    ON bu."BlogId" = p."BlogId"
-    WHERE p."PostId" = $1`,
-        [postId],
-      );
+      //   bannedUsers = await this.dataSource.query(
+      //     `
+      // SELECT bu."UserId" as "id"
+      // FROM public."BannedUsersForBlog" bu
+      // JOIN public."Posts" p
+      // ON bu."BlogId" = p."BlogId"
+      // WHERE p."PostId" = $1`,
+      //     [postId],
+      //   );
+      bannedUsers = await this.bannedUsersForBlogRepo
+        .createQueryBuilder('bu')
+        .select(['bu."userId" as id'])
+        .leftJoinAndSelect('bu.blog', 'b')
+        .where('p.id = :postId', { postId })
+        .getMany();
     } catch (error) {}
 
     return bannedUsers;

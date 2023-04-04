@@ -32,7 +32,7 @@ export class BlogsRepository {
     await this.bannedUsersForBlogRepo
       .createQueryBuilder()
       .delete()
-      .where('"userId" = : userId AND "blogId" = :blogId', { userId, blogId })
+      .where('"userId" = :userId AND "blogId" = :blogId', { userId, blogId })
       .execute();
   }
 
@@ -65,17 +65,9 @@ export class BlogsRepository {
   async findUserInBanListForBlog(
     userId: string,
     blogId: string,
-  ): Promise<Blog> | null {
-    // const userInBanListForBlog = await this.dataSource.query(
-    //   `
-    // SELECT "UserId" as "userId", "IsBanned" as "isBanned", "BanDate" as "banDate", "BanReason" as "banReason", "BlogId" as "blogId"
-    // FROM public."BannedUsersForBlog"
-    // WHERE "UserId" = $1 AND "BlogId" = $2`,
-    //   [userId, blogId],
-    // );
-    const userInBanListForBlog = await this.blogsRepo
+  ): Promise<BannedUsersForBlog> | null {
+    const userInBanListForBlog = await this.bannedUsersForBlogRepo
       .createQueryBuilder()
-      .select(['"userId"', '"isBanned"', '"banDate"', '"banReason"'])
       .where('"userId" = :userId AND "blogId" = :blogId', { userId, blogId })
       .getOne();
 

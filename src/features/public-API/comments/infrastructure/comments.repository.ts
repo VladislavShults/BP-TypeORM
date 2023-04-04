@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Comment } from '../entities/comment.entity';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Comment) private commentsRepo: Repository<Comment>,
+  ) {}
 
   async deleteCommentById(commentId: string): Promise<boolean> {
     try {
@@ -30,19 +34,25 @@ export class CommentsRepository {
     );
   }
 
+  // async createComment(
+  //   content: string,
+  //   postId: string,
+  //   userId: string,
+  // ): Promise<number> {
+  //   const newComment = await this.dataSource.query(
+  //     `
+  //   INSERT INTO public."Comments"("Content", "UserId","PostId")
+  //   VALUES ($1, $2, $3)
+  //   RETURNING "CommentId" as "commentId"`,
+  //     [content, userId, postId],
+  //   );
+  //
+  //   return newComment[0].commentId;
+  // }
   async createComment(
-    content: string,
-    postId: string,
-    userId: string,
+    newComment: Omit<Comment, 'id' | 'post' | 'user'>,
   ): Promise<number> {
-    const newComment = await this.dataSource.query(
-      `
-    INSERT INTO public."Comments"("Content", "UserId","PostId")
-    VALUES ($1, $2, $3)
-    RETURNING "CommentId" as "commentId"`,
-      [content, userId, postId],
-    );
-
-    return newComment[0].commentId;
+    const comment = await this.commentsRepo.save(newComment);
+    return Number(comment.id);
   }
 }

@@ -19,12 +19,18 @@ export class CheckPostInDBGuard implements CanActivate {
 
     const postId = request.params.postId;
 
-    const post = await this.postsRepo
-      .createQueryBuilder()
-      .where('id = :postId AND "isDeleted" = false AND "isBanned" = false', {
-        postId,
-      })
-      .getOne();
+    let post: Post;
+
+    try {
+      post = await this.postsRepo
+        .createQueryBuilder()
+        .where('id = :postId AND "isDeleted" = false AND "isBanned" = false', {
+          postId,
+        })
+        .getOne();
+    } catch (error) {
+      throw new HttpException('POST NOT FOUND', HttpStatus.NOT_FOUND);
+    }
 
     if (!post) throw new HttpException('POST NOT FOUND', HttpStatus.NOT_FOUND);
     return true;

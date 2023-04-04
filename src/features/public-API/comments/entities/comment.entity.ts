@@ -37,5 +37,5 @@ export class Comment {
   post: Post;
 
   @Column()
-  postId: number;
+  postId: string;
 }

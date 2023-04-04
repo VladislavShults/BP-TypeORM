@@ -29,7 +29,7 @@ export class CommentsQueryRepository {
 
     if (userId) {
       stringWhere =
-        ', (SELECT "Status" as "myStatus" FROM public."CommentsLikesOrDislike" c WHERE "CommentId" = $1 AND "UserId" = $2) as "myStatus"';
+        ', (SELECT "status" as "myStatus" FROM public."comments_likes_or_dislike" c WHERE "id" = $1 AND "userId" = $2) as "myStatus"';
       params = [commentId, userId];
     }
 
@@ -38,23 +38,23 @@ export class CommentsQueryRepository {
     try {
       commentDBType = await this.dataSource.query(
         `
-    SELECT c."CommentId" as "id", c."Content" as "content", c."UserId" as "userId", u."Login" as "userLogin", 
-           c."CreatedAt" as "createdAt", 
+    SELECT c."id", c."content", c."userId", u."login" as "userLogin", 
+           c."createdAt", 
         (SELECT COUNT(*)
-        FROM public."CommentsLikesOrDislike" c
-        JOIN public."BanInfo" b
-        ON c."UserId" = b."UserId"
-        WHERE c."Status" = 'Like' AND c."CommentId" = $1 AND b."IsBanned" = false) as "likesCount",
+        FROM public."comments_likes_or_dislike" cl
+        JOIN public."ban_info" b
+        ON c."userId" = b."userId"
+        WHERE cl."status" = 'Like' AND "commentId" = $1 AND b."isBanned" = false) as "likesCount",
         (SELECT COUNT(*)
-        FROM public."CommentsLikesOrDislike"
-        JOIN public."BanInfo" b
-        ON c."UserId" = b."UserId"
-        WHERE "Status" = 'Dislike' AND "CommentId" = $1 AND b."IsBanned" = false) as "dislikesCount"
+        FROM public."comments_likes_or_dislike"
+        JOIN public."ban_info" b
+        ON c."userId" = b."userId"
+        WHERE "status" = 'Dislike' AND "commentId" = $1 AND b."isBanned" = false) as "dislikesCount"
         ${stringWhere}
-    FROM public."Comments" c
-    JOIN public."Users" u
-    ON c."UserId" = u."UserId"
-    WHERE c."IsBanned" = false AND c."IsDeleted" = false AND c."CommentId" = $1`,
+    FROM public."comment" c
+    JOIN public."user" u
+    ON c."userId" = u."id"
+    WHERE c."isBanned" = false AND c."isDeleted" = false AND c."id" = $1`,
         params,
       );
     } catch (error) {}

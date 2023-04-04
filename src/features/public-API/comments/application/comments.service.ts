@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CreateCommentDto } from '../api/models/create-comment.dto';
+import { Comment } from '../entities/comment.entity';
 
 @Injectable()
 export class CommentsService {
@@ -11,11 +12,15 @@ export class CommentsService {
     inputModel: CreateCommentDto,
     userId: string,
   ): Promise<number> {
-    return await this.commentsRepository.createComment(
-      inputModel.content,
-      postId,
+    const newComment: Omit<Comment, 'id' | 'post' | 'user'> = {
+      createdAt: new Date(),
+      isDeleted: false,
+      isBanned: false,
       userId,
-    );
+      postId,
+      content: inputModel.content,
+    };
+    return await this.commentsRepository.createComment(newComment);
   }
 
   async deleteCommentById(commentId: string): Promise<boolean> {
