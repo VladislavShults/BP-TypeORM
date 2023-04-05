@@ -22,7 +22,7 @@ export class AdminBlogsQueryRepository {
     const itemsDB: [BlogDBType & { login: string }] =
       await this.dataSource.query(
         `
-    SELECT "id", "blogName" as "name", "description", "websiteUrl",
+    SELECT b."id", "blogName" as "name", "description", "websiteUrl",
             b."createdAt" as "createdAt", b."isMembership" as "isMembership", u."id" as "userId", u."login" as "userLogin", 
             b."isBanned" as "isBanned", b."banDate" as "banDate"
     FROM public."blog" b

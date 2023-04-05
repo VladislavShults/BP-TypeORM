@@ -30,9 +30,9 @@ export class AdminBlogsController {
     private readonly blogQueryRepository: BlogsQueryRepository,
   ) {}
 
-  @Put(':blogId/bind-with-user/:userId')
-  @HttpCode(204)
-  @UseGuards(BasicAuthGuard)
+  // @Put(':blogId/bind-with-user/:userId')
+  // @HttpCode(204)
+  // @UseGuards(BasicAuthGuard)
   // async bindUserToBlog(@Param() params: URIParamBindUserToBlog) {
   //   const user = await this.usersService.findUserById(params.userId);
   //   if (!user) throw new BadRequestException(createErrorMessage('userId'));
