@@ -48,7 +48,8 @@ export class BlogsQueryRepository {
     const searchNameTerm: string = query.searchNameTerm || '';
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'createdAt';
+    let sortBy: string = query.sortBy || 'createdAt';
+    if (sortBy === 'name') sortBy = 'blogName';
     let sortDirection: 'ASC' | 'DESC' = 'DESC';
     if (query.sortDirection)
       sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';

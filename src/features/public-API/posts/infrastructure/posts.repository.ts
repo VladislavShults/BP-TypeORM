@@ -67,15 +67,6 @@ export class PostsRepository {
     let bannedUsers = [];
 
     try {
-      //   bannedUsers = await this.dataSource.query(
-      //     `
-      // SELECT bu."UserId" as "id"
-      // FROM public."BannedUsersForBlog" bu
-      // JOIN public."Posts" p
-      // ON bu."BlogId" = p."BlogId"
-      // WHERE p."PostId" = $1`,
-      //     [postId],
-      //   );
       bannedUsers = await this.bannedUsersForBlogRepo
         .createQueryBuilder('bu')
         .select(['bu."userId" as id'])
