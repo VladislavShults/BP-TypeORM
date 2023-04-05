@@ -43,7 +43,7 @@ export class CommentsQueryRepository {
         (SELECT COUNT(*)
         FROM public."comments_likes_or_dislike" cl
         JOIN public."user" u
-        ON c."userId" = u."id"
+        ON cl."userId" = u."id"
         WHERE cl."status" = 'Like' AND "commentId" = $1 AND u."isBanned" = false) as "likesCount",
         (SELECT COUNT(*)
         FROM public."comments_likes_or_dislike" cl
