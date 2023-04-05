@@ -54,7 +54,7 @@ export class CommentsQueryRepository {
     FROM public."comment" c
     JOIN public."user" u
     ON c."userId" = u."id"
-    WHERE c."isBanned" = false AND c."isDeleted" = false AND c."id" = $1`,
+    WHERE c."isBanned" = false AND c."isDeleted" = false AND c."id" = $1 AND u."isBanned" = false`,
         params,
       );
     } catch (error) {}
