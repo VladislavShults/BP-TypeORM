@@ -121,32 +121,35 @@ export class PostsQueryRepository {
   ): Promise<ViewPostsTypeWithPagination | null> {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
+    let sortBy: string = query.sortBy || 'createdAt';
+    if (sortBy === 'name') sortBy = 'blogName';
+    let sortDirection: 'ASC' | 'DESC' = 'DESC';
+    if (query.sortDirection)
+      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
     let stringWhere = '';
     let params = [blogId];
 
     if (userId) {
       stringWhere =
-        ', (SELECT "Status" as "myStatus" FROM public."PostsLikesOrDislike" pl WHERE pl."PostId" = p."PostId" AND pl."UserId" = $2) as "myStatus"';
+        ', (SELECT "status" as "myStatus" FROM public."posts_likes_or_dislike" pl WHERE pl."postId" = p."id" AND pl."userId" = $2) as "myStatus"';
       params = [blogId, userId];
     }
     const itemsDBType = await this.dataSource.query(
       `
-    SELECT "PostId" as "id", "Title" as "title", "ShortDescription" as "shortDescription", p."NewestLikes" as "newestLikes",
-            "Content" as "content", p."BlogId" as "blogId", b."BlogName" as "blogName", p."CreatedAt" as "createdAt",
+    SELECT "id", "title", "shortDescription", p."newestLikes" as "newestLikes",
+            "content", p."blogId" as "blogId", b."blogName" as "blogName", p."createdAt" as "createdAt",
         (SELECT COUNT(*)
-           FROM public."PostsLikesOrDislike" pl
-           WHERE pl."Status" = 'Like' AND pl."PostId" = p."PostId" AND p."BlogId" = $1) as "likesCount",
+           FROM public."posts_likes_or_dislike" pl
+           WHERE pl."status" = 'Like' AND pl."postId" = p."id" AND p."blogId" = $1) as "likesCount",
         (SELECT COUNT(*)
-           FROM public."PostsLikesOrDislike" pl
-           WHERE pl."Status" = 'Dislike' AND pl."PostId" = p."PostId" AND p."BlogId" = $1) as "dislikesCount"
+           FROM public."posts_likes_or_dislike" pl
+           WHERE pl."status" = 'Dislike' AND pl."postId" = p."id" AND p."blogId" = $1) as "dislikesCount"
            ${stringWhere}
-    FROM public."Posts" p
-    JOIN public. "Blogs" b
-    ON p."BlogId" = b."BlogId"
-    WHERE p."IsDeleted" = false AND p."BlogId" = $1
+    FROM public."post" p
+    JOIN public. "blog" b
+    ON p."blogId" = b."id"
+    WHERE p."isDeleted" = false AND p."blogId" = $1
     ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
     LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
       params,
@@ -155,8 +158,8 @@ export class PostsQueryRepository {
     const totalCount = await this.dataSource.query(
       `
     SELECT count(*)
-    FROM public."Posts"
-    WHERE "BlogId" = $1 AND "IsDeleted" = false`,
+    FROM public."post"
+    WHERE "blogId" = $1 AND "isDeleted" = false`,
       [params[0]],
     );
 
