@@ -42,14 +42,14 @@ export class CommentsQueryRepository {
            c."createdAt", 
         (SELECT COUNT(*)
         FROM public."comments_likes_or_dislike" cl
-        JOIN public."ban_info" b
-        ON c."userId" = b."userId"
-        WHERE cl."status" = 'Like' AND "commentId" = $1 AND b."isBanned" = false) as "likesCount",
+        JOIN public."user" u
+        ON c."userId" = u."id"
+        WHERE cl."status" = 'Like' AND "commentId" = $1 AND u."isBanned" = false) as "likesCount",
         (SELECT COUNT(*)
-        FROM public."comments_likes_or_dislike"
-        JOIN public."ban_info" b
-        ON c."userId" = b."userId"
-        WHERE "status" = 'Dislike' AND "commentId" = $1 AND b."isBanned" = false) as "dislikesCount"
+        FROM public."comments_likes_or_dislike" cl
+        JOIN public."user" u
+        ON cl."userId" = u."id"
+        WHERE "status" = 'Dislike' AND "commentId" = $1 AND u."isBanned" = false) as "dislikesCount"
         ${stringWhere}
     FROM public."comment" c
     JOIN public."user" u

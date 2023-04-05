@@ -13,7 +13,7 @@ export const mapBlogUserOwner = (
   createdAt: blog.createdAt,
   isMembership: blog.isMembership,
   blogOwnerInfo: {
-    userId: blog.userId,
+    userId: blog.userId.toString(),
     userLogin: blog.userLogin,
   },
   banInfo: {
