@@ -50,12 +50,15 @@ export class LikesRepository {
     postOrComment: string,
   ): Promise<LikeType> {
     let table: string;
+    let stringWhere: string;
 
     if (postOrComment === 'post') {
       table = 'posts_likes_or_dislike';
+      stringWhere = 'postId';
     }
     if (postOrComment === 'comment') {
       table = 'comments_likes_or_dislike';
+      stringWhere = 'commentId';
     }
 
     let myStatus = [];
@@ -65,7 +68,7 @@ export class LikesRepository {
         `
     SELECT "status" as "myStatus"
     FROM public.${'"' + table + '"'}
-    WHERE 'id' = $1 AND "UserId" = $2`,
+    WHERE ${'"' + stringWhere + '"'} = $1 AND "userId" = $2`,
         [postIdOrCommentId, userId],
       );
     } catch (error) {

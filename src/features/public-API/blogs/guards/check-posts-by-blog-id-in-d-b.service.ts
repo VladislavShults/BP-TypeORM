@@ -6,12 +6,13 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { Post } from '../../posts/entities/post.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CheckPostsByBlogIdInDB implements CanActivate {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(@InjectRepository(Post) private postsRepo: Repository<Post>) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
@@ -19,15 +20,16 @@ export class CheckPostsByBlogIdInDB implements CanActivate {
     const params = request.params;
 
     let postsArray = [];
+    const blogId = params.blogId;
 
     try {
-      postsArray = await this.dataSource.query(
-        `
-    SELECT "PostId", "IsDeleted"
-    FROM public."Posts"
-    WHERE "BlogId" = $1 AND "IsDeleted" = false AND "IsBanned" = false`,
-        [params.blogId],
-      );
+      postsArray = await this.postsRepo
+        .createQueryBuilder()
+        .where(
+          '"blogId" = :blogId AND "isDeleted" = false AND "isBanned" = false',
+          { blogId },
+        )
+        .getMany();
     } catch (error) {
       postsArray = [];
     }

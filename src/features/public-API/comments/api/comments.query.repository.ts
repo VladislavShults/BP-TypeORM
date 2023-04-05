@@ -29,7 +29,7 @@ export class CommentsQueryRepository {
 
     if (userId) {
       stringWhere =
-        ', (SELECT "status" as "myStatus" FROM public."comments_likes_or_dislike" c WHERE "id" = $1 AND "userId" = $2) as "myStatus"';
+        ', (SELECT "status" as "myStatus" FROM public."comments_likes_or_dislike" cl WHERE "commentId" = $1 AND "userId" = $2) as "myStatus"';
       params = [commentId, userId];
     }
 
@@ -144,22 +144,12 @@ export class CommentsQueryRepository {
     if (query.sortDirection)
       sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
-    const idsBannedUsersForBlogsThisUser =
-      //   await this.dataSource.query(
-      //     `
-      // SELECT bu."UserId" as "id"
-      // FROM public."BannedUsersForBlog" bu
-      // JOIN public."Blogs" b
-      // ON bu."BlogId" = b."BlogId"
-      // WHERE b."UserId" = $1`,
-      //     [userId],
-      //   );
-      await this.bannedUsersForBlogRepo
-        .createQueryBuilder('bu')
-        .leftJoin('bu.blog', 'b')
-        .select(['bu."userId"'])
-        .where('b."userId" = :userId', { userId })
-        .getMany();
+    const idsBannedUsersForBlogsThisUser = await this.bannedUsersForBlogRepo
+      .createQueryBuilder('bu')
+      .leftJoin('bu.blog', 'b')
+      .select(['bu."userId"'])
+      .where('b."userId" = :userId', { userId })
+      .getMany();
 
     const bannedIdsArray = idsBannedUsersForBlogsThisUser.map((i) => {
       return i.userId;

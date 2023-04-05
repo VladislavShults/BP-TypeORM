@@ -34,7 +34,7 @@ export class PostsQueryRepository {
     try {
       postDBType = await this.postsRepo.query(
         `
-    SELECT p."id", p."title", p."shortDescription", p."newestLikes", 
+    SELECT p."id" as "id", p."title", p."shortDescription", p."newestLikes", 
            p."content", p."blogId", b."blogName", p."createdAt", 
         (SELECT COUNT(*)
            FROM public."posts_likes_or_dislike" pl
@@ -137,7 +137,7 @@ export class PostsQueryRepository {
     }
     const itemsDBType = await this.dataSource.query(
       `
-    SELECT "id", "title", "shortDescription", p."newestLikes" as "newestLikes",
+    SELECT p."id", "title", "shortDescription", p."newestLikes" as "newestLikes",
             "content", p."blogId" as "blogId", b."blogName" as "blogName", p."createdAt" as "createdAt",
         (SELECT COUNT(*)
            FROM public."posts_likes_or_dislike" pl
