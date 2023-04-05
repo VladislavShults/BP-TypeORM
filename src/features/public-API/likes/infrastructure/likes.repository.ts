@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { LikeType } from '../types/likes.types';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { NewestLikesType } from '../../posts/types/posts.types';
+import { CommentsLikesOrDislike } from '../entities/commentsLikesOrDislike';
 
 @Injectable()
 export class LikesRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(CommentsLikesOrDislike)
+    private commentsLikesRepo: Repository<CommentsLikesOrDislike>,
+  ) {}
 
   async saveLikeOrUnlikeForPost(
     postId: string,
@@ -48,15 +53,12 @@ export class LikesRepository {
     postOrComment: string,
   ): Promise<LikeType> {
     let table: string;
-    let stringWhere: string;
 
     if (postOrComment === 'post') {
-      table = 'PostsLikesOrDislike';
-      stringWhere = 'PostId';
+      table = 'posts_likes_or_dislike';
     }
     if (postOrComment === 'comment') {
-      table = 'CommentsLikesOrDislike';
-      stringWhere = 'CommentId';
+      table = 'comments_likes_or_dislike';
     }
 
     let myStatus = [];
@@ -66,7 +68,7 @@ export class LikesRepository {
         `
     SELECT "Status" as "myStatus"
     FROM public.${'"' + table + '"'}
-    WHERE ${'"' + stringWhere + '"'} = $1 AND "UserId" = $2`,
+    WHERE 'id' = $1 AND "UserId" = $2`,
         [postIdOrCommentId, userId],
       );
     } catch (error) {
@@ -102,18 +104,10 @@ export class LikesRepository {
   }
 
   async saveLikeOrUnlikeForComment(
-    commentId: string,
-    userId: string,
-    likeStatus: LikeType,
+    myLike: Omit<CommentsLikesOrDislike, 'id' | 'user' | 'comment'>,
   ) {
     try {
-      await this.dataSource.query(
-        `
-    INSERT INTO public."CommentsLikesOrDislike"(
-        "UserId", "CommentId", "Status", "CreatedAt")
-    VALUES ($1, $2, $3, $4);`,
-        [userId, commentId, likeStatus, new Date()],
-      );
+      await this.commentsLikesRepo.save(myLike);
     } catch (error) {
       return null;
     }
@@ -125,24 +119,28 @@ export class LikesRepository {
     likeStatus: LikeType,
   ) {
     try {
-      await this.dataSource.query(
-        `
-    UPDATE public."CommentsLikesOrDislike"
-    SET "Status"=$1, "CreatedAt"=$2
-    WHERE "UserId" = $3 AND "CommentId" = $4;`,
-        [likeStatus, new Date(), userId, commentId],
-      );
+      await this.commentsLikesRepo
+        .createQueryBuilder()
+        .update(CommentsLikesOrDislike)
+        .set({ status: likeStatus, createdAt: new Date() })
+        .where('"userId" = :userId AND "commentId" = :commentId', {
+          userId,
+          commentId,
+        })
+        .execute();
     } catch (error) {}
   }
 
   async removeLikeOrDislikeForComment(commentId: string, userId: string) {
     try {
-      await this.dataSource.query(
-        `
-    DELETE FROM public."CommentsLikesOrDislike"
-    WHERE "CommentId" = $1 AND "UserId" = $2;`,
-        [commentId, userId],
-      );
+      await this.commentsLikesRepo
+        .createQueryBuilder()
+        .delete()
+        .where('"commentId" = :commentId AND "userId" = :userId', {
+          commentId,
+          userId,
+        })
+        .execute();
     } catch (error) {
       return null;
     }

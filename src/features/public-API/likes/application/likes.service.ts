@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LikesRepository } from '../infrastructure/likes.repository';
 import { LikeType } from '../types/likes.types';
 import { NewestLikesType } from '../../posts/types/posts.types';
+import { CommentsLikesOrDislike } from '../entities/commentsLikesOrDislike';
 
 @Injectable()
 export class LikesService {
@@ -98,11 +99,13 @@ export class LikesService {
     myStatus: LikeType,
   ): Promise<boolean> {
     if (myStatus === 'None') {
-      await this.likesRepository.saveLikeOrUnlikeForComment(
-        commentId,
+      const myLike: Omit<CommentsLikesOrDislike, 'id' | 'user' | 'comment'> = {
+        status: likeStatus,
+        createdAt: new Date(),
         userId,
-        likeStatus,
-      );
+        commentId,
+      };
+      await this.likesRepository.saveLikeOrUnlikeForComment(myLike);
     } else {
       await this.likesRepository.changeLikeStatusForComment(
         commentId,

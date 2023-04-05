@@ -58,8 +58,11 @@ export class PostsController {
   async getPosts(@Query() query: QueryPostDto, @Request() req) {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
+    let sortBy: string = query.sortBy || 'createdAt';
+    if (sortBy === 'name') sortBy = 'blogName';
+    let sortDirection: 'ASC' | 'DESC' = 'DESC';
+    if (query.sortDirection)
+      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
     const userId = req.user?.id.toString() || null;
 

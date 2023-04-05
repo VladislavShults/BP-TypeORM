@@ -69,7 +69,7 @@ export class PostsQueryRepository {
     pageNumber: number,
     pageSize: number,
     sortBy: string,
-    sortDirection: 'asc' | 'desc',
+    sortDirection: 'ASC' | 'DESC',
     userId: string,
   ): Promise<ViewPostsTypeWithPagination> {
     let stringWhere = '';
@@ -77,23 +77,23 @@ export class PostsQueryRepository {
 
     if (userId) {
       stringWhere =
-        ', (SELECT "Status" as "myStatus" FROM public."PostsLikesOrDislike" pl WHERE pl."PostId" = p."PostId" AND pl."UserId" = $1) as "myStatus"';
+        ', (SELECT "status" as "myStatus" FROM public."posts_likes_or_dislike" pl WHERE pl."postId" = p."id" AND pl."userId" = $1) as "myStatus"';
       params = [userId];
     }
     const itemsDBType = await this.dataSource.query(
       `
-    SELECT "PostId" as "id", "Title" as "title", "ShortDescription" as "shortDescription", p."NewestLikes" as "newestLikes",
-            "Content" as "content", p."BlogId" as "blogId", b."BlogName" as "blogName", p."CreatedAt" as "createdAt",
+    SELECT "id", "title", "shortDescription", p."newestLikes" as "newestLikes",
+            "content", p."blogId" as "blogId", b."blogName" as "blogName", p."createdAt" as "createdAt",
         (SELECT COUNT(*)
-           FROM public."PostsLikesOrDislike" pl
-           WHERE pl."Status" = 'Like' AND pl."PostId" = p."PostId") as "likesCount",
+           FROM public."posts_likes_or_dislike" pl
+           WHERE pl."status" = 'Like' AND pl."postId" = p."id") as "likesCount",
         (SELECT COUNT(*)
-           FROM public."PostsLikesOrDislike" pl
-           WHERE pl."Status" = 'Dislike' AND pl."PostId" = p."PostId") as "dislikesCount"
+           FROM public."posts_likes_or_dislike" pl
+           WHERE pl."status" = 'Dislike' AND pl."postId" = p."id") as "dislikesCount"
            ${stringWhere}
-    FROM public."Posts" p
-    JOIN public. "Blogs" b
-    ON p."BlogId" = b."BlogId"
+    FROM public."post" p
+    JOIN public. "blog" b
+    ON p."blogId" = b."id"
     ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
     LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
       params,
@@ -101,7 +101,7 @@ export class PostsQueryRepository {
 
     const totalCount = await this.dataSource.query(`
     SELECT count(*)
-    FROM public."Posts"`);
+    FROM public."post"`);
 
     const items = itemsDBType.map((i) => mapPost(i));
 

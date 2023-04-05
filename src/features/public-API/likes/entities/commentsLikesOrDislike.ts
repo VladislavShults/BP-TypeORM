@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { User } from '../../../SA-API/users/entities/user.entity';
 import { Comment } from '../../comments/entities/comment.entity';
+import { LikeType } from '../types/likes.types';
 
 @Entity()
 export class CommentsLikesOrDislike {
@@ -14,7 +15,7 @@ export class CommentsLikesOrDislike {
   id: string;
 
   @Column()
-  status: string;
+  status: LikeType;
 
   @Column()
   createdAt: Date;
