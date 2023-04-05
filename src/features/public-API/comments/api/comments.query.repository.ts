@@ -71,15 +71,18 @@ export class CommentsQueryRepository {
   ): Promise<ViewCommentsTypeWithPagination> {
     const pageNumber: number = Number(query.pageNumber) || 1;
     const pageSize: number = Number(query.pageSize) || 10;
-    const sortBy: string = query.sortBy || 'createdAt';
-    const sortDirection: 'asc' | 'desc' = query.sortDirection || 'desc';
+    let sortBy: string = query.sortBy || 'createdAt';
+    if (sortBy === 'name') sortBy = 'blogName';
+    let sortDirection: 'ASC' | 'DESC' = 'DESC';
+    if (query.sortDirection)
+      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
     let stringWhere = '';
     let params: string[] = [postId];
 
     if (userId) {
       stringWhere =
-        ', (SELECT "Status" as "myStatus" FROM public."CommentsLikesOrDislike" cl WHERE cl."CommentId" = c."CommentId" AND "UserId" = $2) as "myStatus"';
+        ', (SELECT "status" as "myStatus" FROM public."comments_likes_or_dislike" cl WHERE cl."commentId" = c."id" AND "userId" = $2) as "myStatus"';
       params = [postId, userId];
     }
 
@@ -88,19 +91,19 @@ export class CommentsQueryRepository {
     try {
       commentDBType = await this.dataSource.query(
         `
-    SELECT c."CommentId" as "id", c."Content" as "content", c."UserId" as "userId", u."Login" as "userLogin", 
-           c."CreatedAt" as "createdAt", 
+    SELECT c."id" as "id", c."content" as "content", c."userId" as "userId", u."login" as "userLogin", 
+           c."createdAt" as "createdAt", 
         (SELECT COUNT(*)
-        FROM public."CommentsLikesOrDislike" cl
-        WHERE "Status" = 'Like' AND cl."CommentId" = c."CommentId") as "likesCount",
+        FROM public."comments_likes_or_dislike" cl
+        WHERE "status" = 'Like' AND cl."commentId" = c."id") as "likesCount",
         (SELECT COUNT(*)
-        FROM public."CommentsLikesOrDislike" cl
-        WHERE "Status" = 'Dislike' AND cl."CommentId" = c."CommentId") as "dislikesCount"
+        FROM public."comments_likes_or_dislike" cl
+        WHERE "status" = 'Dislike' AND cl."commentId" = c."id") as "dislikesCount"
         ${stringWhere}
-    FROM public."Comments" c
-    JOIN public."Users" u
-    ON c."UserId" = u."UserId"
-    WHERE c."IsBanned" = false AND c."IsDeleted" = false AND c."PostId" = $1
+    FROM public."comment" c
+    JOIN public."user" u
+    ON c."userId" = u."id"
+    WHERE c."isBanned" = false AND c."isDeleted" = false AND c."postId" = $1
     ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
     LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize}`,
         params,
@@ -114,10 +117,10 @@ export class CommentsQueryRepository {
     const totalCount = await this.dataSource.query(
       `
     SELECT count(*)
-    FROM public."Comments" c
-    JOIN public."Users" u
-    ON c."UserId" = u."UserId"
-    WHERE c."IsBanned" = false AND c."IsDeleted" = false AND c."PostId" = $1`,
+    FROM public."comment" c
+    JOIN public."user" u
+    ON c."userId" = u."id"
+    WHERE c."isBanned" = false AND c."isDeleted" = false AND c."postId" = $1`,
       [params[0]],
     );
 

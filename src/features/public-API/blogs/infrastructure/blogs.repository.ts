@@ -77,13 +77,12 @@ export class BlogsRepository {
 
   async banOrUnbanBlog(blogId: string, banStatus: boolean, date: Date | null) {
     try {
-      await this.dataSource.query(
-        `
-    UPDATE public."Blogs"
-    SET "IsBanned"=$1, "BanDate"=$2
-    WHERE "BlogId" = $3;`,
-        [banStatus, date, blogId],
-      );
+      await this.blogsRepo
+        .createQueryBuilder()
+        .update(Blog)
+        .set({ isBanned: banStatus, banDate: date })
+        .where('id = :blogId', { blogId })
+        .execute();
     } catch (error) {
       return null;
     }

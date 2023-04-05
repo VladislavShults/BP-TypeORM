@@ -3,6 +3,7 @@ import { LikesRepository } from '../infrastructure/likes.repository';
 import { LikeType } from '../types/likes.types';
 import { NewestLikesType } from '../../posts/types/posts.types';
 import { CommentsLikesOrDislike } from '../entities/commentsLikesOrDislike';
+import { PostsLikesOrDislike } from '../entities/postsLikesOrDislike.entity';
 
 @Injectable()
 export class LikesService {
@@ -42,11 +43,13 @@ export class LikesService {
     myStatus: LikeType,
   ): Promise<boolean> {
     if (myStatus === 'None') {
-      await this.likesRepository.saveLikeOrUnlikeForPost(
-        postId,
+      const newLike: Omit<PostsLikesOrDislike, 'id' | 'user' | 'post'> = {
+        status: likeStatus,
+        createdAt: new Date(),
         userId,
-        likeStatus,
-      );
+        postId,
+      };
+      await this.likesRepository.saveLikeOrUnlikeForPost(newLike);
     } else {
       await this.likesRepository.changeLikeStatusForPost(
         postId,

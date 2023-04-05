@@ -29,13 +29,12 @@ export class PostsRepository {
   }
 
   async banAndUnbanPostsByBlog(blogId: string, banStatus: boolean) {
-    await this.dataSource.query(
-      `
-    UPDATE public."Posts"
-    SET "IsBanned"=$1
-    WHERE "BlogId" = $2;`,
-      [banStatus, blogId],
-    );
+    await this.postsRepo
+      .createQueryBuilder()
+      .update(Post)
+      .set({ isBanned: banStatus })
+      .where('"blogId" = :blogId', { blogId })
+      .execute();
   }
 
   async createPost(post: Omit<PostDBType, 'id'>): Promise<string> {

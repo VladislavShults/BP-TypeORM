@@ -22,15 +22,15 @@ export class AdminBlogsQueryRepository {
     const itemsDB: [BlogDBType & { login: string }] =
       await this.dataSource.query(
         `
-    SELECT "BlogId" as "id", "BlogName" as "name", "Description" as "description", "WebsiteUrl" as "websiteUrl",
-            b."CreatedAt" as "createdAt", b."IsMembership" as "isMembership", u."UserId" as "userId", u."Login" as "userLogin", 
-            b."IsBanned" as "isBanned", b."BanDate" as "banDate"
-    FROM public."Blogs" b
-    JOIN public. "Users" u
-    ON b."UserId" = u."UserId"
-    JOIN public. "BanInfo" bi
-    ON bi."UserId" = b."UserId"
-    WHERE b."IsDeleted" = false AND bi."IsBanned" = false AND LOWER ("BlogName") LIKE $1
+    SELECT "id", "blogName" as "name", "description", "websiteUrl",
+            b."createdAt" as "createdAt", b."isMembership" as "isMembership", u."id" as "userId", u."login" as "userLogin", 
+            b."isBanned" as "isBanned", b."banDate" as "banDate"
+    FROM public."blog" b
+    JOIN public. "user" u
+    ON b."userId" = u."id"
+    JOIN public. "ban_info" bi
+    ON bi."userId" = b."userId"
+    WHERE b."isDeleted" = false AND bi."isBanned" = false AND LOWER ("blogName") LIKE $1
     ORDER BY ${'"' + sortBy + '"'} ${sortDirection}
     LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};`,
         ['%' + searchNameTerm.toLocaleLowerCase() + '%'],
@@ -41,12 +41,12 @@ export class AdminBlogsQueryRepository {
     const totalCount = await this.dataSource.query(
       `
     SELECT COUNT(*)
-    FROM public."Blogs" b
-    JOIN public. "Users" u
-    ON b."UserId" = u."UserId"
-    JOIN public. "BanInfo" bi
-    ON b."UserId" = bi."UserId"
-    WHERE b."IsDeleted" = false AND LOWER ("BlogName") LIKE $1`,
+    FROM public."blog" b
+    JOIN public. "user" u
+    ON b."userId" = u."id"
+    JOIN public. "ban_info" bi
+    ON b."userId" = bi."userId"
+    WHERE b."isDeleted" = false AND LOWER ("blogName") LIKE $1`,
       ['%' + searchNameTerm.toLocaleLowerCase() + '%'],
     );
 

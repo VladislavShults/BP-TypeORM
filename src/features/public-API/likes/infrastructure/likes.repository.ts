@@ -4,6 +4,8 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { NewestLikesType } from '../../posts/types/posts.types';
 import { CommentsLikesOrDislike } from '../entities/commentsLikesOrDislike';
+import { PostsLikesOrDislike } from '../entities/postsLikesOrDislike.entity';
+import { Post } from '../../posts/entities/post.entity';
 
 @Injectable()
 export class LikesRepository {
@@ -11,21 +13,17 @@ export class LikesRepository {
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(CommentsLikesOrDislike)
     private commentsLikesRepo: Repository<CommentsLikesOrDislike>,
+    @InjectRepository(PostsLikesOrDislike)
+    private postsLikesRepo: Repository<PostsLikesOrDislike>,
+    @InjectRepository(Post)
+    private postsRepo: Repository<Post>,
   ) {}
 
   async saveLikeOrUnlikeForPost(
-    postId: string,
-    userId: string,
-    likeStatus: LikeType,
+    newLike: Omit<PostsLikesOrDislike, 'id' | 'user' | 'post'>,
   ) {
     try {
-      await this.dataSource.query(
-        `
-    INSERT INTO public."PostsLikesOrDislike"(
-        "UserId", "PostId", "Status", "CreatedAt")
-    VALUES ($1, $2, $3, $4);`,
-        [userId, postId, likeStatus, new Date()],
-      );
+      await this.postsLikesRepo.save(newLike);
     } catch (error) {
       return null;
     }
@@ -37,13 +35,12 @@ export class LikesRepository {
     likeStatus: LikeType,
   ) {
     try {
-      await this.dataSource.query(
-        `
-    UPDATE public."PostsLikesOrDislike"
-    SET "Status"=$1, "CreatedAt"=$2
-    WHERE "UserId" = $3 AND "PostId" = $4;`,
-        [likeStatus, new Date(), userId, postId],
-      );
+      await this.postsLikesRepo
+        .createQueryBuilder()
+        .update(PostsLikesOrDislike)
+        .set({ status: likeStatus, createdAt: new Date() })
+        .where('"userId" = :userId AND "postId" = :postId', { userId, postId })
+        .execute();
     } catch (error) {}
   }
 
@@ -66,7 +63,7 @@ export class LikesRepository {
     try {
       myStatus = await this.dataSource.query(
         `
-    SELECT "Status" as "myStatus"
+    SELECT "status" as "myStatus"
     FROM public.${'"' + table + '"'}
     WHERE 'id' = $1 AND "UserId" = $2`,
         [postIdOrCommentId, userId],
@@ -149,13 +146,13 @@ export class LikesRepository {
   async getThreeNewestLikesForPost(postId: string) {
     return this.dataSource.query(
       `
-    SELECT pl."CreatedAt" as "addedAt", pl."UserId":: character varying as "userId", u."Login" as "login" 
-    FROM public."PostsLikesOrDislike" pl
-    JOIN public."Users" u
+    SELECT pl."createdAt" as "addedAt", pl."userId":: character varying as "userId", u."login" as "login" 
+    FROM public."posts_likes_or_dislike" pl
+    JOIN public."user" u
     ON pl."UserId" = u."UserId"
-    JOIN public."BanInfo" b
-    ON b."UserId" = u."UserId"
-    WHERE "Status" = 'Like' AND pl."PostId" = $1 AND b."IsBanned" = false
+    JOIN public."ban_info" b
+    ON b."userId" = u."id"
+    WHERE "status" = 'Like' AND pl."postId" = $1 AND b."isBanned" = false
     ORDER BY "addedAt" desc
     LIMIT 3 OFFSET 0`,
       [postId],
@@ -166,12 +163,11 @@ export class LikesRepository {
     postId: string,
     threeNewestLikes: NewestLikesType[],
   ) {
-    await this.dataSource.query(
-      `
-    UPDATE public."Posts"
-    SET "NewestLikes"=$2
-    WHERE "PostId" = $1;`,
-      [postId, threeNewestLikes],
-    );
+    await this.postsRepo
+      .createQueryBuilder()
+      .update(Post)
+      .set({ newestLikes: threeNewestLikes })
+      .where('id = :postId', { postId })
+      .execute();
   }
 }
