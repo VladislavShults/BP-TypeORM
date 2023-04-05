@@ -149,7 +149,7 @@ export class LikesRepository {
     SELECT pl."createdAt" as "addedAt", pl."userId":: character varying as "userId", u."login" as "login" 
     FROM public."posts_likes_or_dislike" pl
     JOIN public."user" u
-    ON pl."UserId" = u."UserId"
+    ON pl."userId" = u."id"
     JOIN public."ban_info" b
     ON b."userId" = u."id"
     WHERE "status" = 'Like' AND pl."postId" = $1 AND b."isBanned" = false
