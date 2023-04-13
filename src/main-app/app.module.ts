@@ -2,6 +2,7 @@ import { UsersModule } from '../features/SA-API/users/module/users.module';
 import { Module } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import { pgConnectionOptions } from '../infrastructure/orm-config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BlogsPlatformModule } from '../infrastructure/modules/blogsPlatformModule';
@@ -9,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DeviceSessionModule } from '../features/public-API/devices/module/device-session.module';
 import { User } from '../features/SA-API/users/entities/user.entity';
 
+console.log(pgConnectionOptions.type);
 let urlSQL: string;
 if (process.env.dev === 'local1') {
   urlSQL = process.env.POSTGRES_URL2;

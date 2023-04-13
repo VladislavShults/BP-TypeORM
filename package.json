@@ -18,7 +18,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js -d src/infrastructure/orm-config.ts",
+    "db:create": "yarn typeorm migration:generate src/infrastructure/postgres/migrations/migration",
+    "db:migrate": "yarn typeorm migration:run",
+    "db:drop": "yarn typeorm schema:drop"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -75,7 +79,7 @@
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "4.1.0",
-    "typescript": "^4.7.4"
+    "typescript": "^5.0.4"
   },
   "jest": {
     "moduleFileExtensions": [
