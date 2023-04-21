@@ -1,4 +1,4 @@
-import { IsArray, IsString, Length, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsString, Length } from 'class-validator';
 
 export class CreateQuestionDto {
   @IsString()
@@ -6,6 +6,6 @@ export class CreateQuestionDto {
   body: string;
 
   @IsArray()
-  @MaxLength(10)
+  @ArrayMaxSize(10)
   correctAnswers: string[];
 }

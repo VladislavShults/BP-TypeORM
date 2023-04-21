@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { BlogsController } from '../../features/public-API/blogs/api/blogs.controller';
 import { BlogsService } from '../../features/public-API/blogs/application/blogs.service';
 import { BlogsRepository } from '../../features/public-API/blogs/infrastructure/blogs.repository';
@@ -54,9 +55,14 @@ import { BannedUsersForBlogHttpModule } from '../../features/bloggers-API/users/
 import { AdminQuizGameController } from '../../features/SA-API/quiz-game/api/admin.quiz.controller';
 import { QuizGameQuestionModule } from '../../features/SA-API/quiz-game/module/quizGameQuestion.module';
 import { QuizGameQuestionHttpModule } from '../../features/SA-API/quiz-game/module/quizGameQuestion-http.module';
+import { QuizGameRepository } from '../../features/SA-API/quiz-game/infrastructure/quizGame.repository';
+import { CreateQuestionUseCase } from '../../features/SA-API/quiz-game/application/use-cases/createQuestionUseCase';
+
+export const CommandHandler = [CreateQuestionUseCase];
 
 @Module({
   imports: [
+    CqrsModule,
     UserHttpModule,
     UsersModule,
     IpRestrictionModule,
@@ -92,6 +98,7 @@ import { QuizGameQuestionHttpModule } from '../../features/SA-API/quiz-game/modu
     AdminQuizGameController,
   ],
   providers: [
+    // CommandBus,
     PostsService,
     PostsRepository,
     PostsQueryRepository,
@@ -116,6 +123,8 @@ import { QuizGameQuestionHttpModule } from '../../features/SA-API/quiz-game/modu
     DevicesService,
     DeviceRepository,
     DevicesQueryRepository,
+    QuizGameRepository,
+    ...CommandHandler,
   ],
 })
 export class BlogsPlatformModule {}

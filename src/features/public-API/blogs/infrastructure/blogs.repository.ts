@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BlogDBType } from '../types/blogs.types';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UpdateBlogDto } from '../api/models/update-blog.dto';
 import { Blog } from '../entities/blog.entity';
 import { BannedUsersForBlog } from '../../../bloggers-API/users/entities/bannedUsersForBlog.entity';
@@ -9,7 +9,6 @@ import { BannedUsersForBlog } from '../../../bloggers-API/users/entities/bannedU
 @Injectable()
 export class BlogsRepository {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Blog) private blogsRepo: Repository<Blog>,
     @InjectRepository(BannedUsersForBlog)
     private bannedUsersForBlogRepo: Repository<BannedUsersForBlog>,

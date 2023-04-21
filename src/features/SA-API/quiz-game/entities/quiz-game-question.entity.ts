@@ -1,5 +1,4 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { PublishedStatuses } from '../types/quiz.types';
 
 @Entity()
 export class QuizGameQuestion {
@@ -13,11 +12,11 @@ export class QuizGameQuestion {
   correctAnswers: string[];
 
   @Column()
-  published: PublishedStatuses;
+  published: boolean;
 
   @Column()
   createdAt: Date;
 
-  @Column()
+  @Column({ nullable: true })
   updatedAt: Date;
 }

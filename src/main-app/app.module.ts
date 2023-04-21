@@ -8,6 +8,7 @@ import { BlogsPlatformModule } from '../infrastructure/modules/blogsPlatformModu
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DeviceSessionModule } from '../features/public-API/devices/module/device-session.module';
 import { User } from '../features/SA-API/users/entities/user.entity';
+import { CqrsModule } from '@nestjs/cqrs';
 
 let urlSQL: string;
 if (process.env.dev === 'local1') {
@@ -21,6 +22,7 @@ if (process.env.dev === 'local1') {
 @Module({
   imports: [
     BlogsPlatformModule,
+    CqrsModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: urlSQL,
