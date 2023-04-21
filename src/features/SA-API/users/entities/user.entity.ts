@@ -1,9 +1,4 @@
-import {
-  Column,
-  Entity,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BanInfo } from './ban-info.entity';
 import { EmailConfirmation } from './email-confirmation.entity';
 

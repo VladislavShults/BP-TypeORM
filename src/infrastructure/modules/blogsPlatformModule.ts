@@ -51,6 +51,9 @@ import { CommentsLikesOrDislikeModule } from '../../features/public-API/likes/mo
 import { CommentsLikesOrDislikesHttpModule } from '../../features/public-API/likes/module/commentsLikesOrDislikes-http.module';
 import { BannedUsersForBlogModule } from '../../features/bloggers-API/users/module/bannedUsersForBlog.module';
 import { BannedUsersForBlogHttpModule } from '../../features/bloggers-API/users/module/bannedUsersForBlog-http.module';
+import { AdminQuizGameController } from '../../features/SA-API/quiz-game/api/admin.quiz.controller';
+import { QuizGameQuestionModule } from '../../features/SA-API/quiz-game/module/quizGameQuestion.module';
+import { QuizGameQuestionHttpModule } from '../../features/SA-API/quiz-game/module/quizGameQuestion-http.module';
 
 @Module({
   imports: [
@@ -72,6 +75,8 @@ import { BannedUsersForBlogHttpModule } from '../../features/bloggers-API/users/
     CommentsLikesOrDislikesHttpModule,
     BannedUsersForBlogModule,
     BannedUsersForBlogHttpModule,
+    QuizGameQuestionModule,
+    QuizGameQuestionHttpModule,
   ],
   controllers: [
     BlogsController,
@@ -84,6 +89,7 @@ import { BannedUsersForBlogHttpModule } from '../../features/bloggers-API/users/
     TestingController,
     AuthController,
     SecurityController,
+    AdminQuizGameController,
   ],
   providers: [
     PostsService,

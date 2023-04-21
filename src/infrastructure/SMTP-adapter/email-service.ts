@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import nodemailer from 'nodemailer';
-import sgMail from '@sendgrid/mail';
 
 @Injectable()
 export class EmailService {
