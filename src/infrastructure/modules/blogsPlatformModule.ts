@@ -57,8 +57,13 @@ import { QuizGameQuestionModule } from '../../features/SA-API/quiz-game/module/q
 import { QuizGameQuestionHttpModule } from '../../features/SA-API/quiz-game/module/quizGameQuestion-http.module';
 import { QuizGameRepository } from '../../features/SA-API/quiz-game/infrastructure/quizGame.repository';
 import { CreateQuestionUseCase } from '../../features/SA-API/quiz-game/application/use-cases/createQuestionUseCase';
+import { QuizQueryRepository } from '../../features/SA-API/quiz-game/api/quiz-query-repository';
+import { DeleteQuestionByIdUseCase } from '../../features/SA-API/quiz-game/application/use-cases/delete-question-by-id';
 
-export const CommandHandler = [CreateQuestionUseCase];
+export const CommandHandler = [
+  CreateQuestionUseCase,
+  DeleteQuestionByIdUseCase,
+];
 
 @Module({
   imports: [
@@ -124,6 +129,7 @@ export const CommandHandler = [CreateQuestionUseCase];
     DeviceRepository,
     DevicesQueryRepository,
     QuizGameRepository,
+    QuizQueryRepository,
     ...CommandHandler,
   ],
 })

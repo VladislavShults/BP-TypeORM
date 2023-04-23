@@ -16,4 +16,5 @@ export type QuestionDbType = {
   published: boolean;
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: boolean;
 };

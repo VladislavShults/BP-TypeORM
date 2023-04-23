@@ -17,4 +17,13 @@ export class QuizGameRepository {
     const result = await this.questionsRepo.save(newQuestion);
     return result.id;
   }
+
+  async deleteQuestionById(id: string) {
+    await this.questionsRepo
+      .createQueryBuilder()
+      .update(QuizGameQuestion)
+      .set({ isDeleted: true })
+      .where('id = :id', { id })
+      .execute();
+  }
 }

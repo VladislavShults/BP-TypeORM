@@ -19,4 +19,7 @@ export class QuizGameQuestion {
 
   @Column({ nullable: true })
   updatedAt: Date;
+
+  @Column()
+  isDeleted: boolean;
 }

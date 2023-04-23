@@ -19,7 +19,8 @@ export class CreateQuestionUseCase
       correctAnswers: command.createQuestionDto.correctAnswers,
       published: false,
       createdAt: new Date(),
-      updatedAt: null,
+      updatedAt: new Date(),
+      isDeleted: false,
     };
     return this.quizGameRepository.createQuestion(newQuestion);
   }
