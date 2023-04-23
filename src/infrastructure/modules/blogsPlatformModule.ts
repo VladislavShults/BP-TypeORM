@@ -56,13 +56,17 @@ import { AdminQuizGameController } from '../../features/SA-API/quiz-game/api/adm
 import { QuizGameQuestionModule } from '../../features/SA-API/quiz-game/module/quizGameQuestion.module';
 import { QuizGameQuestionHttpModule } from '../../features/SA-API/quiz-game/module/quizGameQuestion-http.module';
 import { QuizGameRepository } from '../../features/SA-API/quiz-game/infrastructure/quizGame.repository';
-import { CreateQuestionUseCase } from '../../features/SA-API/quiz-game/application/use-cases/createQuestionUseCase';
+import { CreateQuestionUseCase } from '../../features/SA-API/quiz-game/application/use-cases/create-question-use-case';
 import { QuizQueryRepository } from '../../features/SA-API/quiz-game/api/quiz-query-repository';
-import { DeleteQuestionByIdUseCase } from '../../features/SA-API/quiz-game/application/use-cases/delete-question-by-id';
+import { DeleteQuestionByIdUseCase } from '../../features/SA-API/quiz-game/application/use-cases/delete-question-by-id-use-case';
+import { UpdateQuestionByIdUseCase } from '../../features/SA-API/quiz-game/application/use-cases/update-question-by-id-use-case';
+import { UpdatePublishedQuestionByIdUseCase } from '../../features/SA-API/quiz-game/application/use-cases/update-published-question-use-case';
 
 export const CommandHandler = [
   CreateQuestionUseCase,
   DeleteQuestionByIdUseCase,
+  UpdateQuestionByIdUseCase,
+  UpdatePublishedQuestionByIdUseCase,
 ];
 
 @Module({

@@ -6,17 +6,22 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { BasicAuthGuard } from '../../../public-API/auth/guards/basic-auth.guard';
 import { CreateQuestionDto } from './models/create-question.dto';
 import { QuestionViewModel } from '../types/quiz.types';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreateQuestionCommand } from '../application/use-cases/createQuestionUseCase';
+import { CreateQuestionCommand } from '../application/use-cases/create-question-use-case';
 import { QuizQueryRepository } from './quiz-query-repository';
 import { CheckQuestionInDbGuard } from '../guards/check-question-in-db';
 import { UriParamQuestionDto } from './models/uri-param-question-dto';
-import { DeleteQuestionByIdCommand } from '../application/use-cases/delete-question-by-id';
+import { DeleteQuestionByIdCommand } from '../application/use-cases/delete-question-by-id-use-case';
+import { UpdateQuestionDto } from './models/update-question.dto';
+import { UpdateQuestionByIdCommand } from '../application/use-cases/update-question-by-id-use-case';
+import { UpdatePublishQuestionDto } from './models/update-publish-question.dto';
+import { UpdatePublishedQuestionByIdCommand } from '../application/use-cases/update-published-question-use-case';
 
 @Controller('sa/quiz/questions')
 export class AdminQuizGameController {
@@ -40,10 +45,36 @@ export class AdminQuizGameController {
   @Delete(':id')
   @HttpCode(204)
   @UseGuards(BasicAuthGuard, CheckQuestionInDbGuard)
-  async deleteCommentById(
+  async deleteQuestionById(
     @Param() params: UriParamQuestionDto,
   ): Promise<HttpStatus> {
     await this.commandBus.execute(new DeleteQuestionByIdCommand(params));
+    return;
+  }
+
+  @Put(':id')
+  @HttpCode(204)
+  @UseGuards(BasicAuthGuard, CheckQuestionInDbGuard)
+  async updateQuestionById(
+    @Param() params: UriParamQuestionDto,
+    @Body() inputModel: UpdateQuestionDto,
+  ): Promise<HttpStatus> {
+    await this.commandBus.execute(
+      new UpdateQuestionByIdCommand(inputModel, params),
+    );
+    return;
+  }
+
+  @Put(':id/publish')
+  @HttpCode(204)
+  @UseGuards(BasicAuthGuard, CheckQuestionInDbGuard)
+  async updatePublishQuestionById(
+    @Param() params: UriParamQuestionDto,
+    @Body() inputModel: UpdatePublishQuestionDto,
+  ): Promise<HttpStatus> {
+    await this.commandBus.execute(
+      new UpdatePublishedQuestionByIdCommand(inputModel, params),
+    );
     return;
   }
 }
