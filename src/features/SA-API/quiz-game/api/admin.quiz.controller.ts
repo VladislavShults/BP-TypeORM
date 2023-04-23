@@ -2,16 +2,21 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { BasicAuthGuard } from '../../../public-API/auth/guards/basic-auth.guard';
 import { CreateQuestionDto } from './models/create-question.dto';
-import { QuestionViewModel } from '../types/quiz.types';
+import {
+  QuestionsWithPagination,
+  QuestionViewModel,
+} from '../types/quiz.types';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateQuestionCommand } from '../application/use-cases/create-question-use-case';
 import { QuizQueryRepository } from './quiz-query-repository';
@@ -22,6 +27,7 @@ import { UpdateQuestionDto } from './models/update-question.dto';
 import { UpdateQuestionByIdCommand } from '../application/use-cases/update-question-by-id-use-case';
 import { UpdatePublishQuestionDto } from './models/update-publish-question.dto';
 import { UpdatePublishedQuestionByIdCommand } from '../application/use-cases/update-published-question-use-case';
+import { QueryQuestionsDto } from './models/query-questions.dto';
 
 @Controller('sa/quiz/questions')
 export class AdminQuizGameController {
@@ -76,5 +82,14 @@ export class AdminQuizGameController {
       new UpdatePublishedQuestionByIdCommand(inputModel, params),
     );
     return;
+  }
+
+  @Get()
+  @HttpCode(200)
+  @UseGuards(BasicAuthGuard)
+  async getAllQuestions(
+    @Query() query: QueryQuestionsDto,
+  ): Promise<QuestionsWithPagination> {
+    return this.quizGameQueryRepo.getAllQuestions(query);
   }
 }

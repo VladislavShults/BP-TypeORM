@@ -18,3 +18,11 @@ export type QuestionDbType = {
   updatedAt: Date;
   isDeleted: boolean;
 };
+
+export type QuestionsWithPagination = {
+  pagesCount: number;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  items: QuestionViewModel[];
+};
