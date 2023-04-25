@@ -8,5 +8,5 @@ export const mapQuestionDbToViewType = (
   correctAnswers: questionDbType.correctAnswers,
   published: questionDbType.published,
   createdAt: questionDbType.createdAt,
-  updatedAt: questionDbType.createdAt,
+  updatedAt: questionDbType.updatedAt,
 });
