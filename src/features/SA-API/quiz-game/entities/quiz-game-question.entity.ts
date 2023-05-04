@@ -1,8 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { QuizGame } from '../../../public-API/quiz-game/entities/quiz-game.entity';
 
 @Entity()
 export class QuizGameQuestion {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id: string;
 
   @Column()
@@ -22,4 +23,7 @@ export class QuizGameQuestion {
 
   @Column()
   isDeleted: boolean;
+
+  @ManyToOne(() => QuizGame, (quizGame) => quizGame.questions)
+  quizGame: QuizGame;
 }

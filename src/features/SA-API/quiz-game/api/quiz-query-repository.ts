@@ -18,14 +18,8 @@ export class QuizQueryRepository {
 
   async getQuestionById(id: string): Promise<QuestionViewModel> {
     const result = await this.questionsRepo.findOneBy({ id, isDeleted: false });
-    return {
-      id: id.toString(),
-      body: result.body,
-      correctAnswers: result.correctAnswers,
-      published: result.published,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-    };
+
+    return mapQuestionDbToViewType(result);
   }
 
   async getAllQuestions(
