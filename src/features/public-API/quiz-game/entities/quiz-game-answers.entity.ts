@@ -8,15 +8,12 @@ import {
 } from 'typeorm';
 import { QuizGameQuestion } from '../../../SA-API/quiz-game/entities/quiz-game-question.entity';
 import { QuizGame } from './quiz-game.entity';
+import { User } from '../../../SA-API/users/entities/user.entity';
 
-@Entity()
-export class Answers {
+@Entity('Answers')
+export class Answer {
   @PrimaryColumn()
   id: string;
-
-  @OneToOne(() => QuizGame)
-  @JoinColumn()
-  game: QuizGame;
 
   @OneToOne(() => QuizGameQuestion)
   @JoinColumn()
@@ -30,6 +27,10 @@ export class Answers {
 
   @ManyToOne(() => QuizGame, (quizGame) => quizGame.answers)
   quizGame: QuizGame;
+
+  @OneToOne(() => User)
+  @JoinColumn()
+  user: User;
 }
 
 export enum AnswerStatus {

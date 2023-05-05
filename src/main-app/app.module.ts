@@ -9,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DeviceSessionModule } from '../features/public-API/devices/module/device-session.module';
 import { User } from '../features/SA-API/users/entities/user.entity';
 import { CqrsModule } from '@nestjs/cqrs';
+import { QuizGame } from '../features/public-API/quiz-game/entities/quiz-game.entity';
+import { Answer } from '../features/public-API/quiz-game/entities/quiz-game-answers.entity';
 
 let urlSQL: string;
 if (process.env.dev === 'local1') {
@@ -30,7 +32,7 @@ if (process.env.dev === 'local1') {
       autoLoadEntities: true,
       synchronize: true,
       ssl: true,
-      entities: [User],
+      entities: [User, QuizGame, Answer],
     }),
     UsersModule,
     DeviceSessionModule,

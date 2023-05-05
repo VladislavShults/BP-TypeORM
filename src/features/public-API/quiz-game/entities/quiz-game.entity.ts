@@ -1,17 +1,27 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
-import { Answers } from './quiz-game-answers.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
+import { Answer } from './quiz-game-answers.entity';
 import { QuizGameQuestion } from '../../../SA-API/quiz-game/entities/quiz-game-question.entity';
+import { User } from '../../../SA-API/users/entities/user.entity';
 
 @Entity()
 export class QuizGame {
   @PrimaryColumn()
   id: string;
 
-  @Column()
-  firstPlayerId: string;
+  @OneToOne(() => User)
+  @JoinColumn()
+  firstPlayerId: User;
 
-  @Column()
-  secondPlayerId: string;
+  @OneToOne(() => User)
+  @JoinColumn()
+  secondPlayerId: User;
 
   @Column()
   status: StatusGame;
@@ -25,8 +35,8 @@ export class QuizGame {
   @Column({ nullable: true })
   finishGameDate: Date;
 
-  @OneToMany(() => Answers, (answers) => answers.quizGame)
-  answers: Answers[];
+  @OneToMany(() => Answer, (answers) => answers.quizGame)
+  answers: Answer[];
 
   @OneToMany(
     () => QuizGameQuestion,
