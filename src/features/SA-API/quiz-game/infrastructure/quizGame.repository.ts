@@ -1,17 +1,23 @@
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { QuizGameQuestion } from '../entities/quiz-game-question.entity';
 import { Injectable } from '@nestjs/common';
 import { QuestionDbType } from '../types/quiz.types';
 import { UriParamQuestionDto } from '../api/models/uri-param-question-dto';
 import { UpdateQuestionDto } from '../api/models/update-question.dto';
 import { UpdatePublishQuestionDto } from '../api/models/update-publish-question.dto';
+import {
+  QuizGame,
+  StatusGame,
+} from '../../../public-API/quiz-game/entities/quiz-game.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class QuizGameRepository {
   constructor(
     @InjectRepository(QuizGameQuestion)
     private questionsRepo: Repository<QuizGameQuestion>,
+    @InjectRepository(QuizGame)
+    private pairsRepo: Repository<QuizGame>, // private dataSource: DataSource,
   ) {}
 
   async createQuestion(
@@ -63,5 +69,19 @@ export class QuizGameRepository {
       })
       .where('id = :id', { id: uriParamQuestionDto.id })
       .execute();
+  }
+
+  async findActivePair(userId: string) {
+    return this.pairsRepo.find({
+      where: [
+        { firstPlayerId: userId, status: Not(StatusGame.Finished) },
+        { secondPlayerId: userId, status: Not(StatusGame.Finished) },
+      ],
+    });
+  }
+
+  async save(newPair: QuizGame): Promise<string> {
+    const pair = await this.pairsRepo.save(newPair);
+    return pair.id;
   }
 }

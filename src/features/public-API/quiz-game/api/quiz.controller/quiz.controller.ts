@@ -11,6 +11,6 @@ export class QuizController {
   @UseGuards(JwtAuthGuard)
   async createNewPairOrConnection(@Request() req) {
     const userId = req.user.id;
-    return this.commandBus.execute(new ConnectionCommand(userId));
+    const pairId = await this.commandBus.execute(new ConnectionCommand(userId));
   }
 }

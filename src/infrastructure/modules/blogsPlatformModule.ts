@@ -61,12 +61,17 @@ import { QuizQueryRepository } from '../../features/SA-API/quiz-game/api/quiz-qu
 import { DeleteQuestionByIdUseCase } from '../../features/SA-API/quiz-game/application/use-cases/delete-question-by-id-use-case';
 import { UpdateQuestionByIdUseCase } from '../../features/SA-API/quiz-game/application/use-cases/update-question-by-id-use-case';
 import { UpdatePublishedQuestionByIdUseCase } from '../../features/SA-API/quiz-game/application/use-cases/update-published-question-use-case';
+import { ConnectionUseCase } from '../../features/public-API/quiz-game/application/use-cases/connection.use-case';
+import { QuizController } from '../../features/public-API/quiz-game/api/quiz.controller/quiz.controller';
+import { QuizGameModule } from '../../features/public-API/quiz-game/module/quiz-game.module';
+import { QuizGameHttpModule } from '../../features/public-API/quiz-game/module/quiz-game.http-module';
 
 export const CommandHandler = [
   CreateQuestionUseCase,
   DeleteQuestionByIdUseCase,
   UpdateQuestionByIdUseCase,
   UpdatePublishedQuestionByIdUseCase,
+  ConnectionUseCase,
 ];
 
 @Module({
@@ -92,6 +97,8 @@ export const CommandHandler = [
     BannedUsersForBlogHttpModule,
     QuizGameQuestionModule,
     QuizGameQuestionHttpModule,
+    QuizGameModule,
+    QuizGameHttpModule,
   ],
   controllers: [
     BlogsController,
@@ -105,9 +112,9 @@ export const CommandHandler = [
     AuthController,
     SecurityController,
     AdminQuizGameController,
+    QuizController,
   ],
   providers: [
-    // CommandBus,
     PostsService,
     PostsRepository,
     PostsQueryRepository,

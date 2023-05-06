@@ -17,11 +17,17 @@ export class QuizGame {
 
   @OneToOne(() => User)
   @JoinColumn()
-  firstPlayerId: User;
+  firstPlayer: User;
+
+  @Column()
+  firstPlayerId: string;
 
   @OneToOne(() => User)
   @JoinColumn()
-  secondPlayerId: User;
+  secondPlayer: User;
+
+  @Column()
+  secondPlayerId: string;
 
   @Column()
   status: StatusGame;
@@ -46,7 +52,7 @@ export class QuizGame {
 }
 
 export enum StatusGame {
-  PendingSecondPlayer = 'PendingSecondPlayer',
-  Active = 'Active',
-  Finished = 'Finished',
+  PendingSecondPlayer = 'pendingSecondPlayer',
+  Active = 'active',
+  Finished = 'finished',
 }

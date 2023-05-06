@@ -56,7 +56,7 @@ export type GameStatuses = 'PendingSecondPlayer' | 'Active' | 'Finished';
 export type GamePairViewModel = {
   id: string;
   firstPlayerProgress: GamePlayerProgressViewModel;
-  secondPlayerProgress: GamePlayerProgressViewModel;
+  secondPlayerProgress: GamePlayerProgressViewModel | null;
   questions: QuestionsViewModel;
   status: GameStatuses;
   pairCreatedDate: Date;
