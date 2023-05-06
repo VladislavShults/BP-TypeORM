@@ -27,7 +27,6 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
       newPair.questions = null;
       newPair.scoreFirstPlayer = 0;
       newPair.scoreSecondPlayer = 0;
-
       return this.quizGameRepository.save(newPair);
     } else {
       pairWithoutSecondPlayer.secondPlayerId = command.userId;
@@ -35,7 +34,6 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
       pairWithoutSecondPlayer.startGameDate = new Date();
       pairWithoutSecondPlayer.questions =
         await this.quizGameRepository.getFiveRandomQuestions();
-
       return this.quizGameRepository.save(pairWithoutSecondPlayer);
     }
   }
