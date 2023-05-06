@@ -26,3 +26,40 @@ export type QuestionsWithPagination = {
   totalCount: number;
   items: QuestionViewModel[];
 };
+
+export type PlayerViewModel = {
+  id: string;
+  login: string;
+};
+
+type AnswerStatuses = 'Correct' | 'InCorrect';
+
+export type AnswersViewModel = {
+  questionId: string;
+  answerStatus: AnswerStatuses;
+  addedAt: Date;
+};
+
+export type GamePlayerProgressViewModel = {
+  answers: AnswersViewModel;
+  player: PlayerViewModel;
+  score: number;
+};
+
+export type QuestionsViewModel = {
+  id: string;
+  body: string;
+};
+
+export type GameStatuses = 'PendingSecondPlayer' | 'Active' | 'Finished';
+
+export type GamePairViewModel = {
+  id: string;
+  firstPlayerProgress: GamePlayerProgressViewModel;
+  secondPlayerProgress: GamePlayerProgressViewModel;
+  questions: QuestionsViewModel;
+  status: GameStatuses;
+  pairCreatedDate: Date;
+  startGameDate: Date | null;
+  finishGameDate: Date | null;
+};
