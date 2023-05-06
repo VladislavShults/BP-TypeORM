@@ -10,7 +10,7 @@ import { QuizGameQuestion } from '../../../SA-API/quiz-game/entities/quiz-game-q
 import { QuizGame } from './quiz-game.entity';
 import { User } from '../../../SA-API/users/entities/user.entity';
 
-@Entity('Answers')
+@Entity('answers')
 export class Answer {
   @PrimaryColumn()
   id: string;
