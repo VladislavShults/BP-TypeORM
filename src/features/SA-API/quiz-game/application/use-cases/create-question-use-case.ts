@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionDbType } from '../../types/quiz.types';
 import { QuizGameRepository } from '../../infrastructure/quizGame.repository';
 import { CreateQuestionDto } from '../../api/models/create-question.dto';
+import { randomUUID } from 'crypto';
 
 export class CreateQuestionCommand {
   constructor(public readonly createQuestionDto: CreateQuestionDto) {}
@@ -14,7 +15,8 @@ export class CreateQuestionUseCase
   constructor(private quizGameRepository: QuizGameRepository) {}
 
   async execute(command: CreateQuestionCommand): Promise<string> {
-    const newQuestion: Omit<QuestionDbType, 'id'> = {
+    const newQuestion: QuestionDbType = {
+      id: randomUUID(),
       body: command.createQuestionDto.body,
       correctAnswers: command.createQuestionDto.correctAnswers,
       published: false,
