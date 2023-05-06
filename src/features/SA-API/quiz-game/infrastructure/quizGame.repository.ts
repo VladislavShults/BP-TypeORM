@@ -96,11 +96,13 @@ export class QuizGameRepository {
   }
 
   async getFiveRandomQuestions() {
-    return this.questionsRepo
+    const questions = await this.questionsRepo
       .createQueryBuilder()
-      .select('id body')
+      .select(['id', 'body'])
       .orderBy('RANDOM()')
       .limit(5)
       .execute();
+
+    return questions;
   }
 }
