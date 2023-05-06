@@ -1,3 +1,6 @@
+import { StatusGame } from '../../../public-API/quiz-game/entities/quiz-game.entity';
+import { AnswerStatus } from '../../../public-API/quiz-game/entities/quiz-game-answers.entity';
+
 export type QuestionViewModel = {
   id: string;
   body: string;
@@ -32,16 +35,14 @@ export type PlayerViewModel = {
   login: string;
 };
 
-type AnswerStatuses = 'Correct' | 'InCorrect';
-
 export type AnswersViewModel = {
   questionId: string;
-  answerStatus: AnswerStatuses;
+  answerStatus: AnswerStatus;
   addedAt: Date;
 };
 
 export type GamePlayerProgressViewModel = {
-  answers: AnswersViewModel;
+  answers: AnswersViewModel[] | null;
   player: PlayerViewModel;
   score: number;
 };
@@ -57,8 +58,8 @@ export type GamePairViewModel = {
   id: string;
   firstPlayerProgress: GamePlayerProgressViewModel;
   secondPlayerProgress: GamePlayerProgressViewModel | null;
-  questions: QuestionsViewModel;
-  status: GameStatuses;
+  questions: QuestionsViewModel[] | null;
+  status: StatusGame;
   pairCreatedDate: Date;
   startGameDate: Date | null;
   finishGameDate: Date | null;

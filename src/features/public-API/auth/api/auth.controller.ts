@@ -31,7 +31,6 @@ import { UsersForCheckInDB } from '../../../SA-API/users/types/users.types';
 import { Cookies } from '../decorators/cookies.decorator';
 import { CheckRefreshTokenInCookie } from '../guards/checkRefreshTokenInCookie';
 import { DevicesService } from '../../devices/application/devices.service';
-import { IpRestrictionGuard } from '../../../../infrastructure/ip-restriction/guards/ip-restriction.guard';
 import { JwtAuthGuard } from '../guards/JWT-auth.guard';
 
 @Controller('auth')
@@ -122,7 +121,7 @@ export class AuthController {
 
     const newAccessToken = await this.authService.createAccessToken(
       user.userId.toString(),
-      '300000',
+      '30000000',
     );
     const newRefreshToken = await this.authService.createRefreshToken(
       user.userId.toString(),

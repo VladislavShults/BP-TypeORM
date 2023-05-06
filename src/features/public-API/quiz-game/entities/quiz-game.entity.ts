@@ -26,7 +26,7 @@ export class QuizGame {
   @JoinColumn()
   secondPlayer: User;
 
-  @Column()
+  @Column({ nullable: true })
   secondPlayerId: string;
 
   @Column()
@@ -42,13 +42,19 @@ export class QuizGame {
   finishGameDate: Date;
 
   @OneToMany(() => Answer, (answers) => answers.quizGame)
-  answers: Answer[];
+  answers: null | Answer[];
 
   @OneToMany(
     () => QuizGameQuestion,
     (quizGameQuestions) => quizGameQuestions.quizGame,
   )
-  questions: QuizGameQuestion[];
+  questions: null | QuizGameQuestion[];
+
+  @Column()
+  scoreFirstPlayer: number;
+
+  @Column()
+  scoreSecondPlayer: number;
 }
 
 export enum StatusGame {

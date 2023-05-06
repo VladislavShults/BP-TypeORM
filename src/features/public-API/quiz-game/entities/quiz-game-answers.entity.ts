@@ -20,6 +20,9 @@ export class Answer {
   question: QuizGameQuestion;
 
   @Column()
+  questionId: string;
+
+  @Column()
   answer: string;
 
   @Column()
@@ -31,6 +34,12 @@ export class Answer {
   @OneToOne(() => User)
   @JoinColumn()
   user: User;
+
+  @Column()
+  userId: string;
+
+  @Column()
+  addedAt: Date;
 }
 
 export enum AnswerStatus {

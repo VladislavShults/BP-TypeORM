@@ -3,17 +3,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QuizGameQuestion } from '../entities/quiz-game-question.entity';
 import { Repository } from 'typeorm';
 import {
+  GamePairViewModel,
   QuestionsWithPagination,
   QuestionViewModel,
 } from '../types/quiz.types';
 import { QueryQuestionsDto } from './models/query-questions.dto';
 import { mapQuestionDbToViewType } from '../helpers/map-question-db-to-view';
+import { QuizGame } from '../../../public-API/quiz-game/entities/quiz-game.entity';
+import { mapDBPairToViewModel } from '../../../public-API/quiz-game/helpers/mapDBPairToViewModel';
 
 @Injectable()
 export class QuizQueryRepository {
   constructor(
     @InjectRepository(QuizGameQuestion)
     private questionsRepo: Repository<QuizGameQuestion>,
+    @InjectRepository(QuizGame)
+    private pairsRepo: Repository<QuizGame>,
   ) {}
 
   async getQuestionById(id: string): Promise<QuestionViewModel> {
@@ -76,5 +81,18 @@ export class QuizQueryRepository {
       totalCount: Number(totalCount),
       items,
     };
+  }
+
+  async getPairById(pairId: string): Promise<GamePairViewModel> {
+    const pair = await this.pairsRepo.findOne({
+      where: { id: pairId },
+      relations: {
+        firstPlayer: true,
+        secondPlayer: true,
+        answers: true,
+        questions: true,
+      },
+    });
+    return mapDBPairToViewModel(pair);
   }
 }

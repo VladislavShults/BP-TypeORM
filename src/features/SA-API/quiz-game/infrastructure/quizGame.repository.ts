@@ -71,8 +71,8 @@ export class QuizGameRepository {
       .execute();
   }
 
-  async findActivePair(userId: string) {
-    return this.pairsRepo.find({
+  async findActivePair(userId: string): Promise<QuizGame> {
+    return this.pairsRepo.findOne({
       where: [
         { firstPlayerId: userId, status: Not(StatusGame.Finished) },
         { secondPlayerId: userId, status: Not(StatusGame.Finished) },
@@ -83,5 +83,24 @@ export class QuizGameRepository {
   async save(newPair: QuizGame): Promise<string> {
     const pair = await this.pairsRepo.save(newPair);
     return pair.id;
+  }
+
+  async findPairWithoutSecondPlayer() {
+    const pair = await this.pairsRepo.findOne({
+      where: { secondPlayerId: null, status: StatusGame.PendingSecondPlayer },
+    });
+
+    if (!pair) return null;
+
+    return pair;
+  }
+
+  async getFiveRandomQuestions() {
+    return this.questionsRepo
+      .createQueryBuilder()
+      .select('id body')
+      .orderBy('RANDOM()')
+      .limit(5)
+      .execute();
   }
 }
