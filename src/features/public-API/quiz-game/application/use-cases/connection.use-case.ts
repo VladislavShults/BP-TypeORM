@@ -27,13 +27,17 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
       newPair.questions = null;
       newPair.scoreFirstPlayer = 0;
       newPair.scoreSecondPlayer = 0;
+
       return this.quizGameRepository.save(newPair);
     } else {
+      const randomQuestions =
+        await this.quizGameRepository.getFiveRandomQuestions();
+
       pairWithoutSecondPlayer.secondPlayerId = command.userId;
       pairWithoutSecondPlayer.status = StatusGame.Active;
       pairWithoutSecondPlayer.startGameDate = new Date();
-      pairWithoutSecondPlayer.questions =
-        await this.quizGameRepository.getFiveRandomQuestions();
+      pairWithoutSecondPlayer.questions = randomQuestions;
+
       return this.quizGameRepository.save(pairWithoutSecondPlayer);
     }
   }

@@ -14,6 +14,14 @@ export const mapDBPairToViewModel = (pair: QuizGame): GamePairViewModel => {
     (p) => p.userId !== pair.secondPlayerId,
   );
 
+  let arrQuestions;
+
+  if (pair.questions.length !== 0)
+    arrQuestions = pair.questions.map((p) => ({
+      id: p.id,
+      body: p.body,
+    }));
+
   return {
     id: pair.id,
     firstPlayerProgress: {
@@ -40,7 +48,7 @@ export const mapDBPairToViewModel = (pair: QuizGame): GamePairViewModel => {
           },
           score: pair.scoreSecondPlayer,
         },
-    questions: pair.questions.length === 0 ? null : pair.questions,
+    questions: pair.questions.length === 0 ? null : arrQuestions,
     status: pair.status,
     pairCreatedDate: pair.pairCreatedDate,
     startGameDate: pair.startGameDate,

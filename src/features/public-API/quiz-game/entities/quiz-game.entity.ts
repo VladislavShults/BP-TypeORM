@@ -2,6 +2,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryColumn,
@@ -42,13 +44,14 @@ export class QuizGame {
   finishGameDate: Date;
 
   @OneToMany(() => Answer, (answers) => answers.quizGame)
-  answers: null | Answer[];
+  answers: Answer[];
 
-  @OneToMany(
-    () => QuizGameQuestion,
-    (quizGameQuestions) => quizGameQuestions.quizGame,
-  )
-  questions: null | QuizGameQuestion[];
+  @ManyToMany(() => QuizGameQuestion, { cascade: true })
+  @JoinTable()
+  questions: QuizGameQuestion[];
+
+  // @Column({ type: 'jsonb', nullable: true })
+  // questionsId: string[];
 
   @Column()
   scoreFirstPlayer: number;
