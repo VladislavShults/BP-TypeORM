@@ -76,7 +76,12 @@ export class GiveAnAnswerUseCase
         command.activeGame.firstPlayerId != userIdPlayerGaveLastAnswer
       ) {
         command.activeGame.scoreFirstPlayer += 1;
-      } else {
+      }
+
+      if (
+        correctAnswersFirstResponder.length !== 0 &&
+        command.activeGame.firstPlayerId == userIdPlayerGaveLastAnswer
+      ) {
         command.activeGame.scoreSecondPlayer += 1;
       }
     }
