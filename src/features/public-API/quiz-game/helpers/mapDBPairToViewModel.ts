@@ -27,7 +27,7 @@ export const mapDBPairToViewModel = (pair: QuizGame): GamePairViewModel => {
     firstPlayerProgress: {
       answers:
         answersFirstPlayer.length === 0
-          ? null
+          ? []
           : answersFirstPlayer.map((a) => mapAnswer(a)),
       player: {
         id: pair.firstPlayer.id.toString(),
@@ -40,7 +40,7 @@ export const mapDBPairToViewModel = (pair: QuizGame): GamePairViewModel => {
       : {
           answers:
             answersSecondPlayer.length === 0
-              ? null
+              ? []
               : answersSecondPlayer.map((a) => mapAnswer(a)),
           player: {
             id: pair.secondPlayer.id.toString(),

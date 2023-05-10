@@ -58,7 +58,7 @@ export class QuizGame {
 }
 
 export enum StatusGame {
-  PendingSecondPlayer = 'pendingSecondPlayer',
-  Active = 'active',
-  Finished = 'finished',
+  PendingSecondPlayer = 'PendingSecondPlayer',
+  Active = 'Active',
+  Finished = 'Finished',
 }
