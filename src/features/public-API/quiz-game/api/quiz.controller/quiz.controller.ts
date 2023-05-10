@@ -77,6 +77,7 @@ export class QuizController {
   }
 
   @Post('my-current/answers')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, CheckActivePairByIdAndUserIdGuard)
   async createAnswer(
     @Body() inputModel: AnswerInputModelDto,
