@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuizGameRepository } from '../../../../SA-API/quiz-game/infrastructure/quizGame.repository';
 import { AnswersViewModel } from '../../../../SA-API/quiz-game/types/quiz.types';
-import { QuizGame } from '../../entities/quiz-game.entity';
+import { QuizGame, StatusGame } from '../../entities/quiz-game.entity';
 import { Answer, AnswerStatus } from '../../entities/quiz-game-answers.entity';
 import { randomUUID } from 'crypto';
 
@@ -85,6 +85,10 @@ export class GiveAnAnswerUseCase
         command.activeGame.scoreSecondPlayer += 1;
       }
     }
+
+    command.activeGame.finishGameDate = new Date();
+
+    command.activeGame.status = StatusGame.Finished;
 
     await this.quizGameRepository.save(command.activeGame);
 
