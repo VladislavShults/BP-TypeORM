@@ -5,12 +5,12 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { QuizGameRepository } from '../../../SA-API/quiz-game/infrastructure/quizGame.repository';
 import { UserDBType } from '../../../SA-API/users/types/users.types';
+import { QuizQueryRepository } from '../../../SA-API/quiz-game/api/quiz-query-repository';
 
 @Injectable()
 export class CheckUserInActivePairGuard implements CanActivate {
-  constructor(private readonly quizGameRepo: QuizGameRepository) {}
+  constructor(private readonly quizGameRepo: QuizQueryRepository) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();

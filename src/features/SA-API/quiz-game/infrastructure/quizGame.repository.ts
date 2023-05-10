@@ -1,4 +1,4 @@
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { QuizGameQuestion } from '../entities/quiz-game-question.entity';
 import { Injectable } from '@nestjs/common';
 import { QuestionDbType } from '../types/quiz.types';
@@ -71,15 +71,6 @@ export class QuizGameRepository {
       .execute();
   }
 
-  async findActivePair(userId: string): Promise<QuizGame> {
-    return this.pairsRepo.findOne({
-      where: [
-        { firstPlayerId: userId, status: Not(StatusGame.Finished) },
-        { secondPlayerId: userId, status: Not(StatusGame.Finished) },
-      ],
-    });
-  }
-
   async save(newPair: QuizGame): Promise<string> {
     const pair = await this.pairsRepo.save(newPair);
     return pair.id;
@@ -96,12 +87,10 @@ export class QuizGameRepository {
   }
 
   async getFiveRandomQuestions() {
-    const questions: QuizGameQuestion[] = await this.questionsRepo
+    return await this.questionsRepo
       .createQueryBuilder()
       .orderBy('RANDOM()')
       .limit(5)
       .getMany();
-
-    return questions;
   }
 }

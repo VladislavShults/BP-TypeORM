@@ -50,9 +50,6 @@ export class QuizGame {
   @JoinTable()
   questions: QuizGameQuestion[];
 
-  // @Column({ type: 'jsonb', nullable: true })
-  // questionsId: string[];
-
   @Column()
   scoreFirstPlayer: number;
 

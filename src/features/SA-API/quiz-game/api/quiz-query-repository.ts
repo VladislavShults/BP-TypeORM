@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QuizGameQuestion } from '../entities/quiz-game-question.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import {
   GamePairViewModel,
   QuestionsWithPagination,
@@ -9,7 +9,10 @@ import {
 } from '../types/quiz.types';
 import { QueryQuestionsDto } from './models/query-questions.dto';
 import { mapQuestionDbToViewType } from '../helpers/map-question-db-to-view';
-import { QuizGame } from '../../../public-API/quiz-game/entities/quiz-game.entity';
+import {
+  QuizGame,
+  StatusGame,
+} from '../../../public-API/quiz-game/entities/quiz-game.entity';
 import { mapDBPairToViewModel } from '../../../public-API/quiz-game/helpers/mapDBPairToViewModel';
 
 @Injectable()
@@ -94,5 +97,14 @@ export class QuizQueryRepository {
       },
     });
     return mapDBPairToViewModel(pair);
+  }
+
+  async findActivePair(userId: string): Promise<QuizGame> {
+    return this.pairsRepo.findOne({
+      where: [
+        { firstPlayerId: userId, status: Not(StatusGame.Finished) },
+        { secondPlayerId: userId, status: Not(StatusGame.Finished) },
+      ],
+    });
   }
 }
