@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Param,
@@ -22,6 +23,7 @@ import { CheckActivePairByIdAndUserIdGuard } from '../../guards/check-user-in-ac
 import { AnswerInputModelDto } from '../models/answer-input-model.dto';
 import { filterResponsesFromAGivenUser } from '../../helpers/filterResponsesFromAGivenUser';
 import { GiveAnAnswerCommand } from '../../application/use-cases/give-an-answer.use-case';
+import { GetAnswerInputModelDTO } from '../models/get-answer-input-model.DTO';
 
 @Controller('pair-game-quiz/pairs')
 export class QuizController {
@@ -31,6 +33,7 @@ export class QuizController {
   ) {}
 
   @Post('connection')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, CheckUserInNotFinishedPairGuard)
   async createNewPairOrConnection(@Request() req): Promise<GamePairViewModel> {
     const userId = req.user.id;
@@ -57,7 +60,7 @@ export class QuizController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async getAllStatusGameById(
-    @Param() params: { id: string },
+    @Param() params: GetAnswerInputModelDTO,
     @Request() req,
   ): Promise<GamePairViewModel> {
     const userId: string = req.user.id.toString();
