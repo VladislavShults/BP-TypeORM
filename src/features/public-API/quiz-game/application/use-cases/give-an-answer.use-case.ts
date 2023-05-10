@@ -86,6 +86,8 @@ export class GiveAnAnswerUseCase
       }
     }
 
+    command.activeGame.finishGameDate = new Date();
+
     await this.quizGameRepository.save(command.activeGame);
 
     return answer;
