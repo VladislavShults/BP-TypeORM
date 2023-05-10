@@ -4,12 +4,12 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
+import { QuizQueryRepository } from '../../../SA-API/quiz-game/api/quiz-query-repository';
 import { Request } from 'express';
 import { UserDBType } from '../../../SA-API/users/types/users.types';
-import { QuizQueryRepository } from '../../../SA-API/quiz-game/api/quiz-query-repository';
 
 @Injectable()
-export class CheckUserInActivePairGuard implements CanActivate {
+export class CheckActivePairByIdAndUserIdGuard implements CanActivate {
   constructor(private readonly quizGameRepo: QuizQueryRepository) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -19,9 +19,14 @@ export class CheckUserInActivePairGuard implements CanActivate {
 
     const userId = user.id.toString();
 
-    const activePair = await this.quizGameRepo.findActivePair(userId);
+    const gameId = request.params.id;
 
-    if (activePair) throw new ForbiddenException();
+    const activePair = await this.quizGameRepo.findActivePairByIdAndUserId(
+      userId,
+      gameId,
+    );
+
+    if (!activePair) throw new ForbiddenException();
 
     return true;
   }

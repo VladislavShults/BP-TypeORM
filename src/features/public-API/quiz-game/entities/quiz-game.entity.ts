@@ -43,7 +43,7 @@ export class QuizGame {
   @Column({ nullable: true })
   finishGameDate: Date;
 
-  @OneToMany(() => Answer, (answers) => answers.quizGame)
+  @OneToMany(() => Answer, (answers) => answers.quizGame, { cascade: true })
   answers: Answer[];
 
   @ManyToMany(() => QuizGameQuestion, { cascade: true })

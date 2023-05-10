@@ -99,16 +99,29 @@ export class QuizQueryRepository {
     return mapDBPairToViewModel(pair);
   }
 
-  async findActivePair(userId: string): Promise<QuizGame> {
+  async findNotFinishedPair(userId: string): Promise<QuizGame> {
     return this.pairsRepo.findOne({
       where: [
         { firstPlayerId: userId, status: Not(StatusGame.Finished) },
         { secondPlayerId: userId, status: Not(StatusGame.Finished) },
       ],
+      relations: { answers: true, questions: true },
     });
   }
 
   async findAllStatusGameById(id: string): Promise<QuizGame> {
     return this.pairsRepo.findOneBy({ id });
+  }
+
+  async findActivePairByIdAndUserId(
+    userId: string,
+    gameId: string,
+  ): Promise<QuizGame> {
+    return this.pairsRepo.findOne({
+      where: [
+        { id: gameId, firstPlayerId: userId, status: StatusGame.Active },
+        { id: gameId, secondPlayerId: userId, status: StatusGame.Active },
+      ],
+    });
   }
 }

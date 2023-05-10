@@ -10,6 +10,7 @@ import {
   StatusGame,
 } from '../../../public-API/quiz-game/entities/quiz-game.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Answer } from '../../../public-API/quiz-game/entities/quiz-game-answers.entity';
 
 @Injectable()
 export class QuizGameRepository {
@@ -17,7 +18,9 @@ export class QuizGameRepository {
     @InjectRepository(QuizGameQuestion)
     private questionsRepo: Repository<QuizGameQuestion>,
     @InjectRepository(QuizGame)
-    private pairsRepo: Repository<QuizGame>, // private dataSource: DataSource,
+    private pairsRepo: Repository<QuizGame>,
+    @InjectRepository(Answer)
+    private answersRepo: Repository<Answer>,
   ) {}
 
   async createQuestion(
@@ -92,5 +95,9 @@ export class QuizGameRepository {
       .orderBy('RANDOM()')
       .limit(5)
       .getMany();
+  }
+
+  async saveAnswer(newAnswer: Answer): Promise<Answer> {
+    return this.answersRepo.save(newAnswer);
   }
 }

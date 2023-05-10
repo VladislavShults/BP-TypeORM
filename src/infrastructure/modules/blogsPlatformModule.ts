@@ -65,6 +65,9 @@ import { ConnectionUseCase } from '../../features/public-API/quiz-game/applicati
 import { QuizController } from '../../features/public-API/quiz-game/api/quiz.controller/quiz.controller';
 import { QuizGameModule } from '../../features/public-API/quiz-game/module/quiz-game.module';
 import { QuizGameHttpModule } from '../../features/public-API/quiz-game/module/quiz-game.http-module';
+import { GiveAnAnswerUseCase } from '../../features/public-API/quiz-game/application/use-cases/give-an-answer.use-case';
+import { AnswerModule } from '../../features/public-API/quiz-game/module/answer.module';
+import { AnswerHttpModule } from '../../features/public-API/quiz-game/module/answer-http.module';
 
 export const CommandHandler = [
   CreateQuestionUseCase,
@@ -72,6 +75,7 @@ export const CommandHandler = [
   UpdateQuestionByIdUseCase,
   UpdatePublishedQuestionByIdUseCase,
   ConnectionUseCase,
+  GiveAnAnswerUseCase,
 ];
 
 @Module({
@@ -99,6 +103,8 @@ export const CommandHandler = [
     QuizGameQuestionHttpModule,
     QuizGameModule,
     QuizGameHttpModule,
+    AnswerModule,
+    AnswerHttpModule,
   ],
   controllers: [
     BlogsController,

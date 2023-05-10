@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
@@ -12,8 +13,15 @@ import { JwtAuthGuard } from '../../../auth/guards/JWT-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { ConnectionCommand } from '../../application/use-cases/connection.use-case';
 import { QuizQueryRepository } from '../../../../SA-API/quiz-game/api/quiz-query-repository';
-import { CheckUserInActivePairGuard } from '../../guards/check-user-in-active-pair.guard';
-import { GamePairViewModel } from '../../../../SA-API/quiz-game/types/quiz.types';
+import { CheckUserInNotFinishedPairGuard } from '../../guards/check-user-in-not-finished-pair-guard.service';
+import {
+  AnswersViewModel,
+  GamePairViewModel,
+} from '../../../../SA-API/quiz-game/types/quiz.types';
+import { CheckActivePairByIdAndUserIdGuard } from '../../guards/check-user-in-active-pair';
+import { AnswerInputModelDto } from '../models/answer-input-model.dto';
+import { filterResponsesFromAGivenUser } from '../../helpers/filterResponsesFromAGivenUser';
+import { GiveAnAnswerCommand } from '../../application/use-cases/give-an-answer.use-case';
 
 @Controller('pair-game-quiz/pairs')
 export class QuizController {
@@ -23,12 +31,14 @@ export class QuizController {
   ) {}
 
   @Post('connection')
-  @UseGuards(JwtAuthGuard, CheckUserInActivePairGuard)
+  @UseGuards(JwtAuthGuard, CheckUserInNotFinishedPairGuard)
   async createNewPairOrConnection(@Request() req): Promise<GamePairViewModel> {
     const userId = req.user.id;
+
     const pairId: string = await this.commandBus.execute(
       new ConnectionCommand(userId),
     );
+
     return this.quizGameQueryRepo.getPairById(pairId);
   }
 
@@ -37,12 +47,11 @@ export class QuizController {
   async getCurrentNotFinishedGame(@Request() req): Promise<GamePairViewModel> {
     const userId: string = req.user.id.toString();
 
-    const activeGameId = await this.quizGameQueryRepo.findActivePair(userId);
+    const activeGame = await this.quizGameQueryRepo.findNotFinishedPair(userId);
 
-    if (!activeGameId)
-      throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    if (!activeGame) throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
 
-    return this.quizGameQueryRepo.getPairById(activeGameId.id);
+    return this.quizGameQueryRepo.getPairById(activeGame.id);
   }
 
   @Get(':id')
@@ -62,5 +71,30 @@ export class QuizController {
     else {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
+  }
+
+  @Post('my-current/answers')
+  @UseGuards(JwtAuthGuard, CheckActivePairByIdAndUserIdGuard)
+  async createAnswer(
+    @Body() inputModel: AnswerInputModelDto,
+    @Request() req,
+  ): Promise<AnswersViewModel> {
+    const userId = req.user.id;
+
+    const activeGame = await this.quizGameQueryRepo.findNotFinishedPair(userId);
+
+    const answersAboutUser = filterResponsesFromAGivenUser(activeGame, userId);
+
+    if (answersAboutUser.length >= 5)
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+
+    return this.commandBus.execute(
+      new GiveAnAnswerCommand(
+        activeGame,
+        userId,
+        inputModel.answer,
+        answersAboutUser,
+      ),
+    );
   }
 }
