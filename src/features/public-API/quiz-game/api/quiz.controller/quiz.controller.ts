@@ -3,6 +3,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Param,
   Post,
   Request,
   UseGuards,
@@ -42,5 +43,24 @@ export class QuizController {
       throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
 
     return this.quizGameQueryRepo.getPairById(activeGameId.id);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async getAllStatusGameById(
+    @Param() params: { id: string },
+    @Request() req,
+  ): Promise<GamePairViewModel> {
+    const userId: string = req.user.id.toString();
+
+    const game = await this.quizGameQueryRepo.findAllStatusGameById(params.id);
+
+    if (!game) throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+
+    if (game.firstPlayerId == userId || game.secondPlayerId == userId)
+      return this.quizGameQueryRepo.getPairById(game.id);
+    else {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
   }
 }

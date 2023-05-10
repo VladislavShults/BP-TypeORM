@@ -107,4 +107,8 @@ export class QuizQueryRepository {
       ],
     });
   }
+
+  async findAllStatusGameById(id: string): Promise<QuizGame> {
+    return this.pairsRepo.findOneBy({ id });
+  }
 }

@@ -87,7 +87,7 @@ export class QuizGameRepository {
   }
 
   async getFiveRandomQuestions() {
-    return await this.questionsRepo
+    return this.questionsRepo
       .createQueryBuilder()
       .orderBy('RANDOM()')
       .limit(5)
