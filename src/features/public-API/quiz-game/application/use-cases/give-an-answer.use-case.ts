@@ -87,7 +87,6 @@ export class GiveAnAnswerUseCase
     }
 
     command.activeGame.finishGameDate = new Date();
-
     command.activeGame.status = StatusGame.Finished;
 
     await this.quizGameRepository.save(command.activeGame);
