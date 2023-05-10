@@ -92,6 +92,7 @@ export class QuizGameRepository {
   async getFiveRandomQuestions() {
     return this.questionsRepo
       .createQueryBuilder()
+      .where('published = true')
       .orderBy('RANDOM()')
       .limit(5)
       .getMany();
