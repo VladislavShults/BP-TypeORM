@@ -113,14 +113,11 @@ export class QuizQueryRepository {
     return this.pairsRepo.findOneBy({ id });
   }
 
-  async findActivePairByIdAndUserId(
-    userId: string,
-    gameId: string,
-  ): Promise<QuizGame> {
+  async findActivePairByUserId(userId: string): Promise<QuizGame> {
     return this.pairsRepo.findOne({
       where: [
-        { id: gameId, firstPlayerId: userId, status: StatusGame.Active },
-        { id: gameId, secondPlayerId: userId, status: StatusGame.Active },
+        { firstPlayerId: userId, status: StatusGame.Active },
+        { secondPlayerId: userId, status: StatusGame.Active },
       ],
     });
   }

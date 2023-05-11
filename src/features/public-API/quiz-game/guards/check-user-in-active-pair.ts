@@ -19,12 +19,7 @@ export class CheckActivePairByIdAndUserIdGuard implements CanActivate {
 
     const userId = user.id.toString();
 
-    const gameId = request.params.id;
-
-    const activePair = await this.quizGameRepo.findActivePairByIdAndUserId(
-      userId,
-      gameId,
-    );
+    const activePair = await this.quizGameRepo.findActivePairByUserId(userId);
 
     if (!activePair) throw new ForbiddenException();
 

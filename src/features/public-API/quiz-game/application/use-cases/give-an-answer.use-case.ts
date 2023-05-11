@@ -84,10 +84,10 @@ export class GiveAnAnswerUseCase
       ) {
         command.activeGame.scoreSecondPlayer += 1;
       }
-    }
 
-    command.activeGame.finishGameDate = new Date();
-    command.activeGame.status = StatusGame.Finished;
+      command.activeGame.finishGameDate = new Date();
+      command.activeGame.status = StatusGame.Finished;
+    }
 
     await this.quizGameRepository.save(command.activeGame);
 
