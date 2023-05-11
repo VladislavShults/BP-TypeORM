@@ -38,5 +38,5 @@ export class Answer {
 
 export enum AnswerStatus {
   Correct = 'Correct',
-  Incorrect = 'InCorrect',
+  Incorrect = 'Incorrect',
 }
