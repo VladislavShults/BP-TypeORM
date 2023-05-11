@@ -8,6 +8,9 @@ export class TestingController {
   @Delete('all-data')
   @HttpCode(204)
   async clearAllData(): Promise<HttpStatus> {
+    await this.dataSource.query(
+      `DELETE FROM public."quiz_game_questions_quiz_game_question"`,
+    );
     await this.dataSource.query(`DELETE FROM public."quiz_game_question"`);
     await this.dataSource.query(`DELETE FROM public."answers"`);
     await this.dataSource.query(`DELETE FROM public."quiz_game"`);
