@@ -4,8 +4,8 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryColumn,
 } from 'typeorm';
 import { Answer } from './quiz-game-answers.entity';
@@ -17,14 +17,14 @@ export class QuizGame {
   @PrimaryColumn()
   id: string;
 
-  @OneToOne(() => User, (user) => user.quizGame)
+  @ManyToOne(() => User, (user) => user.quizGame)
   @JoinColumn()
   firstPlayer: User;
 
   @Column()
   firstPlayerId: string;
 
-  @OneToOne(() => User, (user) => user.quizGame)
+  @ManyToOne(() => User, (user) => user.quizGame)
   @JoinColumn()
   secondPlayer: User;
 
