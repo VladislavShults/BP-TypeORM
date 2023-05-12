@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QuizGameQuestion } from '../entities/quiz-game-question.entity';
 import { Not, Repository } from 'typeorm';
 import {
+  GamePairsViewModelWithPagination,
   GamePairViewModel,
   QuestionsWithPagination,
   QuestionViewModel,
@@ -14,6 +15,7 @@ import {
   StatusGame,
 } from '../../../public-API/quiz-game/entities/quiz-game.entity';
 import { mapDBPairToViewModel } from '../../../public-API/quiz-game/helpers/mapDBPairToViewModel';
+import { QueryGameDTO } from '../../../public-API/quiz-game/api/models/query-game.DTO';
 
 @Injectable()
 export class QuizQueryRepository {
@@ -120,5 +122,52 @@ export class QuizQueryRepository {
         { secondPlayerId: userId, status: StatusGame.Active },
       ],
     });
+  }
+
+  async getAllPairsByUserId(
+    userId: string,
+    query: QueryGameDTO,
+  ): Promise<GamePairsViewModelWithPagination> {
+    const { sortBy, sortDirection, pageSize, pageNumber } = query;
+
+    const pairs = await this.pairsRepo.findAndCount({
+      where: [{ firstPlayerId: userId }, { secondPlayerId: userId }],
+      relations: {
+        answers: true,
+        questions: true,
+        firstPlayer: true,
+        secondPlayer: true,
+      },
+      order: { pairCreatedDate: { direction: sortDirection } },
+      take: pageSize,
+      skip: (pageNumber - 1) * pageSize,
+    });
+
+    // const pairs = await this.pairsRepo
+    //   .createQueryBuilder('p')
+    //   .leftJoinAndSelect('p.answers', 'answers')
+    //   .leftJoinAndSelect('p.questions', 'quiz_game_question')
+    //   .leftJoinAndSelect('p.firstPlayer', 'user')
+    //   // .leftJoinAndSelect('p.secondPlayer', 'user')
+    //   .where('p."firstPlayerId" = :userId OR p."secondPlayerId" = :userId', {
+    //     userId,
+    //   })
+    //   .limit(pageSize)
+    //   .orderBy('"' + sortBy + '"', sortDirection)
+    //   .addOrderBy('p."pairCreatedDate"', 'DESC')
+    //   .offset((pageNumber - 1) * pageSize)
+    //   .getManyAndCount();
+
+    const items = pairs[0].map((p) => mapDBPairToViewModel(p));
+
+    const totalCount = Number(pairs[1]);
+
+    return {
+      pagesCount: Math.ceil(totalCount / pageSize),
+      page: pageNumber,
+      pageSize: pageSize,
+      totalCount: Number(totalCount),
+      items,
+    };
   }
 }

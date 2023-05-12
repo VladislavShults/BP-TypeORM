@@ -64,3 +64,11 @@ export type GamePairViewModel = {
   startGameDate: Date | null;
   finishGameDate: Date | null;
 };
+
+export type GamePairsViewModelWithPagination = {
+  pagesCount: number;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  items: GamePairViewModel[];
+};

@@ -17,14 +17,14 @@ export class QuizGame {
   @PrimaryColumn()
   id: string;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, (user) => user.quizGame)
   @JoinColumn()
   firstPlayer: User;
 
   @Column()
   firstPlayerId: string;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, (user) => user.quizGame)
   @JoinColumn()
   secondPlayer: User;
 

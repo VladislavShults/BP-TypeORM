@@ -1,6 +1,12 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { BanInfo } from './ban-info.entity';
 import { EmailConfirmation } from './email-confirmation.entity';
+import { QuizGame } from '../../../public-API/quiz-game/entities/quiz-game.entity';
 
 @Entity()
 export class User {
@@ -30,4 +36,7 @@ export class User {
 
   @OneToOne(() => EmailConfirmation, (e) => e.user)
   emailConfirmation: Omit<EmailConfirmation, 'userId'>;
+
+  @OneToOne(() => QuizGame, (q) => q.firstPlayer || q.secondPlayer)
+  quizGame: QuizGame;
 }

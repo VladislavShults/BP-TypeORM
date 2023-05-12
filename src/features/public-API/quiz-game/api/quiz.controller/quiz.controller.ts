@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { QuizQueryRepository } from '../../../../SA-API/quiz-game/api/quiz-query
 import { CheckUserInNotFinishedPairGuard } from '../../guards/check-user-in-not-finished-pair-guard.service';
 import {
   AnswersViewModel,
+  GamePairsViewModelWithPagination,
   GamePairViewModel,
 } from '../../../../SA-API/quiz-game/types/quiz.types';
 import { CheckActivePairByIdAndUserIdGuard } from '../../guards/check-user-in-active-pair';
@@ -24,6 +26,7 @@ import { AnswerInputModelDto } from '../models/answer-input-model.dto';
 import { filterResponsesFromAGivenUser } from '../../helpers/filterResponsesFromAGivenUser';
 import { GiveAnAnswerCommand } from '../../application/use-cases/give-an-answer.use-case';
 import { GetAnswerInputModelDTO } from '../models/get-answer-input-model.DTO';
+import { QueryGameDTO } from '../models/query-game.DTO';
 
 @Controller('pair-game-quiz/pairs')
 export class QuizController {
@@ -31,6 +34,17 @@ export class QuizController {
     private commandBus: CommandBus,
     private quizGameQueryRepo: QuizQueryRepository,
   ) {}
+
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  async getAllMyGames(
+    @Query() query: QueryGameDTO,
+    @Request() req,
+  ): Promise<GamePairsViewModelWithPagination> {
+    const userId: string = req.user.id.toString();
+
+    return this.quizGameQueryRepo.getAllPairsByUserId(userId, query);
+  }
 
   @Post('connection')
   @HttpCode(HttpStatus.OK)
