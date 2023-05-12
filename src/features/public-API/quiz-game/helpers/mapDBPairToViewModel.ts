@@ -1,4 +1,4 @@
-import { QuizGame, StatusGame } from '../entities/quiz-game.entity';
+import { QuizGame } from '../entities/quiz-game.entity';
 import {
   AnswersViewModel,
   GamePairViewModel,
@@ -26,7 +26,7 @@ export const mapDBPairToViewModel = (pair: QuizGame): GamePairViewModel => {
     id: pair.id,
     firstPlayerProgress: {
       answers:
-        answersFirstPlayer.length === 0 || pair.status !== StatusGame.Finished
+        answersFirstPlayer.length === 0
           ? []
           : answersFirstPlayer.map((a) => mapAnswer(a)),
       player: {
@@ -39,8 +39,7 @@ export const mapDBPairToViewModel = (pair: QuizGame): GamePairViewModel => {
       ? null
       : {
           answers:
-            answersSecondPlayer.length === 0 ||
-            pair.status !== StatusGame.Finished
+            answersSecondPlayer.length === 0
               ? []
               : answersSecondPlayer.map((a) => mapAnswer(a)),
           player: {
