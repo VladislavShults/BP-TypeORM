@@ -17,14 +17,14 @@ export class QuizGame {
   @PrimaryColumn()
   id: string;
 
-  @ManyToOne(() => User, (user) => user.quizGame)
+  @ManyToOne(() => User, (user) => user.quizGame, { eager: true })
   @JoinColumn()
   firstPlayer: User;
 
   @Column()
   firstPlayerId: string;
 
-  @ManyToOne(() => User, (user) => user.quizGame)
+  @ManyToOne(() => User, (user) => user.quizGame, { eager: true })
   @JoinColumn()
   secondPlayer: User;
 

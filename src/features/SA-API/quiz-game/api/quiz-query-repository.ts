@@ -130,33 +130,33 @@ export class QuizQueryRepository {
   ): Promise<GamePairsViewModelWithPagination> {
     const { sortBy, sortDirection, pageSize, pageNumber } = query;
 
-    const pairs = await this.pairsRepo.findAndCount({
-      where: [{ firstPlayerId: userId }, { secondPlayerId: userId }],
-      relations: {
-        answers: true,
-        questions: true,
-        firstPlayer: true,
-        secondPlayer: true,
-      },
-      order: { pairCreatedDate: { direction: sortDirection } },
-      take: pageSize,
-      skip: (pageNumber - 1) * pageSize,
-    });
+    // const pairs = await this.pairsRepo.findAndCount({
+    //   where: [{ firstPlayerId: userId }, { secondPlayerId: userId }],
+    //   relations: {
+    //     answers: true,
+    //     questions: true,
+    //     firstPlayer: true,
+    //     secondPlayer: true,
+    //   },
+    //   order: { [`${sortBy}`]: 'DESC' },
+    //   take: pageSize,
+    //   skip: (pageNumber - 1) * pageSize,
+    // });
 
-    // const pairs = await this.pairsRepo
-    //   .createQueryBuilder('p')
-    //   .leftJoinAndSelect('p.answers', 'answers')
-    //   .leftJoinAndSelect('p.questions', 'quiz_game_question')
-    //   .leftJoinAndSelect('p.firstPlayer', 'user')
-    //   // .leftJoinAndSelect('p.secondPlayer', 'user')
-    //   .where('p."firstPlayerId" = :userId OR p."secondPlayerId" = :userId', {
-    //     userId,
-    //   })
-    //   .limit(pageSize)
-    //   .orderBy('"' + sortBy + '"', sortDirection)
-    //   .addOrderBy('p."pairCreatedDate"', 'DESC')
-    //   .offset((pageNumber - 1) * pageSize)
-    //   .getManyAndCount();
+    const pairs = await this.pairsRepo
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.answers', 'answers')
+      .leftJoinAndSelect('p.questions', 'quiz_game_question')
+      .leftJoinAndSelect('p.firstPlayer', 'user')
+      .leftJoinAndSelect('p.secondPlayer', 'user1')
+      .where('p."firstPlayerId" = :userId OR p."secondPlayerId" = :userId', {
+        userId,
+      })
+      .orderBy('"' + sortBy + '"', sortDirection)
+      .limit(pageSize)
+      .addOrderBy('p."pairCreatedDate"', 'DESC')
+      .offset((pageNumber - 1) * pageSize)
+      .getManyAndCount();
 
     const items = pairs[0].map((p) => mapDBPairToViewModel(p));
 
