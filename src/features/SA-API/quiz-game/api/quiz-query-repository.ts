@@ -136,13 +136,17 @@ export class QuizQueryRepository {
       .leftJoinAndSelect('p.questions', 'game')
       .leftJoinAndSelect('p.firstPlayer', 'user')
       .leftJoinAndSelect('p.secondPlayer', 'user1')
-      .where('p."firstPlayerId" = :userId OR p."secondPlayerId" = :userId', {
-        userId,
-      })
+      .where(
+        'p."firstPlayerId" = :firstPlayer OR p."secondPlayerId" = :secondPlayer',
+        {
+          firstPlayer: userId,
+          secondPlayer: userId,
+        },
+      )
       .orderBy('"' + sortBy + '"', sortDirection)
       .addOrderBy('p."pairCreatedDate"', 'DESC')
-      .limit(pageSize)
       .offset((pageNumber - 1) * pageSize)
+      // .limit(pageSize)
       .getManyAndCount();
 
     const items = pairs[0].map((p) => mapDBPairToViewModel(p));
