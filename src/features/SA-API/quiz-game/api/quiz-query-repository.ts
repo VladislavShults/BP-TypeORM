@@ -130,12 +130,21 @@ export class QuizQueryRepository {
   ): Promise<GamePairsViewModelWithPagination> {
     const { sortBy, sortDirection, pageSize, pageNumber } = query;
 
+    // const pairs = await this.pairsRepo.findAndCount({
+    //   where: [{ firstPlayerId: userId }, { secondPlayerId: userId }],
+    //   relations: {
+    //     answers: true,
+    //     questions: true,
+    //     firstPlayer: true,
+    //     secondPlayer: true,
+    //   },
+    //   order: { status: 'ASC', pairCreatedDate: 'DESC' },
+    //   skip: (pageNumber - 1) * pageSize,
+    //   take: pageSize,
+    // });
+
     const pairs = await this.pairsRepo
       .createQueryBuilder('p')
-      .leftJoinAndSelect('p.answers', 'answers')
-      .leftJoinAndSelect('p.questions', 'game')
-      .leftJoinAndSelect('p.firstPlayer', 'user')
-      .leftJoinAndSelect('p.secondPlayer', 'user1')
       .where(
         'p."firstPlayerId" = :firstPlayer OR p."secondPlayerId" = :secondPlayer',
         {
@@ -144,9 +153,13 @@ export class QuizQueryRepository {
         },
       )
       .orderBy('"' + sortBy + '"', sortDirection)
-      .addOrderBy('p."pairCreatedDate"', 'DESC')
-      .offset((pageNumber - 1) * pageSize)
+      .skip((pageNumber - 1) * pageSize)
       // .limit(pageSize)
+      .addOrderBy('p."pairCreatedDate"', 'DESC')
+      .leftJoinAndSelect('p.answers', 'answers')
+      .leftJoinAndSelect('p.questions', 'game')
+      .leftJoinAndSelect('p.firstPlayer', 'user')
+      .leftJoinAndSelect('p.secondPlayer', 'user1')
       .getManyAndCount();
 
     const items = pairs[0].map((p) => mapDBPairToViewModel(p));
