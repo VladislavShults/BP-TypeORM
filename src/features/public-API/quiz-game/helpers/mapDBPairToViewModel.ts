@@ -7,11 +7,11 @@ import { Answer } from '../entities/quiz-game-answers.entity';
 
 export const mapDBPairToViewModel = (pair: QuizGame): GamePairViewModel => {
   const answersFirstPlayer = pair.answers.filter(
-    (p) => p.userId == pair.firstPlayerId,
+    (p) => p.userId != pair.firstPlayerId,
   );
 
   const answersSecondPlayer = pair.answers.filter(
-    (p) => p.userId == pair.secondPlayerId,
+    (p) => p.userId != pair.secondPlayerId,
   );
 
   let arrQuestions;
@@ -57,7 +57,7 @@ export const mapDBPairToViewModel = (pair: QuizGame): GamePairViewModel => {
 };
 
 const mapAnswer = (answer: Answer): AnswersViewModel => ({
-  questionId: answer.questionId,
-  answerStatus: answer.answerStatus,
   addedAt: answer.addedAt,
+  answerStatus: answer.answerStatus,
+  questionId: answer.questionId,
 });

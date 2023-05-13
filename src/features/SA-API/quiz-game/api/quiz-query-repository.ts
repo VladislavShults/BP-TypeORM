@@ -130,19 +130,6 @@ export class QuizQueryRepository {
   ): Promise<GamePairsViewModelWithPagination> {
     const { sortBy, sortDirection, pageSize, pageNumber } = query;
 
-    // const pairs = await this.pairsRepo.findAndCount({
-    //   where: [{ firstPlayerId: userId }, { secondPlayerId: userId }],
-    //   relations: {
-    //     answers: true,
-    //     questions: true,
-    //     firstPlayer: true,
-    //     secondPlayer: true,
-    //   },
-    //   order: { [`${sortBy}`]: 'DESC' },
-    //   take: pageSize,
-    //   skip: (pageNumber - 1) * pageSize,
-    // });
-
     const pairs = await this.pairsRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.answers', 'answers')
@@ -153,8 +140,8 @@ export class QuizQueryRepository {
         userId,
       })
       .orderBy('"' + sortBy + '"', sortDirection)
-      .limit(pageSize)
       .addOrderBy('p."pairCreatedDate"', 'DESC')
+      .limit(pageSize)
       .offset((pageNumber - 1) * pageSize)
       .getManyAndCount();
 
