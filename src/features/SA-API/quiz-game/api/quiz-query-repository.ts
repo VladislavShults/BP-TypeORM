@@ -133,7 +133,7 @@ export class QuizQueryRepository {
     const pairs = await this.pairsRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.answers', 'answers')
-      .leftJoinAndSelect('p.questions', 'quiz_game_question')
+      .leftJoinAndSelect('p.questions', 'game')
       .leftJoinAndSelect('p.firstPlayer', 'user')
       .leftJoinAndSelect('p.secondPlayer', 'user1')
       .where('p."firstPlayerId" = :userId OR p."secondPlayerId" = :userId', {
