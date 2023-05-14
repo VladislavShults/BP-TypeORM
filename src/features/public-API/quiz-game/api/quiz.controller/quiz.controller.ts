@@ -23,7 +23,6 @@ import {
 } from '../../../../SA-API/quiz-game/types/quiz.types';
 import { CheckActivePairByIdAndUserIdGuard } from '../../guards/check-user-in-active-pair';
 import { AnswerInputModelDto } from '../models/answer-input-model.dto';
-import { filterResponsesFromAGivenUser } from '../../helpers/filterResponsesFromAGivenUser';
 import { GiveAnAnswerCommand } from '../../application/use-cases/give-an-answer.use-case';
 import { GetAnswerInputModelDTO } from '../models/get-answer-input-model.DTO';
 import { QueryGameDTO } from '../models/query-game.DTO';
@@ -99,20 +98,8 @@ export class QuizController {
   ): Promise<AnswersViewModel> {
     const userId = req.user.id;
 
-    const activeGame = await this.quizGameQueryRepo.findNotFinishedPair(userId);
-
-    const answersAboutUser = filterResponsesFromAGivenUser(activeGame, userId);
-
-    if (answersAboutUser.length >= 5)
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-
     return this.commandBus.execute(
-      new GiveAnAnswerCommand(
-        activeGame,
-        userId,
-        inputModel.answer,
-        answersAboutUser,
-      ),
+      new GiveAnAnswerCommand(userId, inputModel.answer),
     );
   }
 }

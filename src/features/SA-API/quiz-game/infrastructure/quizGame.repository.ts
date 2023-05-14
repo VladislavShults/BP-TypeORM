@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { EntityManager, Not, Repository } from 'typeorm';
 import { QuizGameQuestion } from '../entities/quiz-game-question.entity';
 import { Injectable } from '@nestjs/common';
 import { QuestionDbType } from '../types/quiz.types';
@@ -79,14 +79,13 @@ export class QuizGameRepository {
     return pair.id;
   }
 
-  async findPairWithoutSecondPlayer() {
-    const pair = await this.pairsRepo.findOne({
-      where: { secondPlayerId: null, status: StatusGame.PendingSecondPlayer },
-    });
-
-    if (!pair) return null;
-
-    return pair;
+  async findPairWithoutSecondPlayer(manager: EntityManager) {
+    return manager
+      .getRepository(QuizGame)
+      .createQueryBuilder('game')
+      .setLock('pessimistic_write')
+      .where({ status: StatusGame.PendingSecondPlayer })
+      .getOne();
   }
 
   async getFiveRandomQuestions() {
@@ -98,7 +97,44 @@ export class QuizGameRepository {
       .getMany();
   }
 
-  async saveAnswer(newAnswer: Answer): Promise<Answer> {
-    return this.answersRepo.save(newAnswer);
+  async saveInTransaction(
+    pairWithoutSecondPlayer: QuizGame,
+    manager: EntityManager,
+  ) {
+    return manager.save(pairWithoutSecondPlayer);
+  }
+
+  async findNotFinishedPair(userId: string): Promise<QuizGame> {
+    return this.pairsRepo.findOne({
+      where: [
+        { firstPlayerId: userId, status: Not(StatusGame.Finished) },
+        { secondPlayerId: userId, status: Not(StatusGame.Finished) },
+      ],
+      relations: { answers: true, questions: true },
+    });
+  }
+
+  async findActivePair(
+    userId: string,
+    manager: EntityManager,
+  ): Promise<QuizGame> {
+    // return this.pairsRepo.findOne({
+    //   where: [
+    //     { firstPlayerId: userId, status: Not(StatusGame.Finished) },
+    //     { secondPlayerId: userId, status: Not(StatusGame.Finished) },
+    //   ],
+    //   relations: { answers: true, questions: true },
+    // });
+    return (
+      manager
+        .getRepository(QuizGame)
+        .createQueryBuilder('game')
+        .setLock('pessimistic_write')
+        // .leftJoinAndSelect('game.answers', 'answers')
+        // .leftJoinAndSelect('game.questions', 'questions')
+        .where({ firstPlayerId: userId, status: StatusGame.Active })
+        .orWhere({ secondPlayerId: userId, status: StatusGame.Active })
+        .getOne()
+    );
   }
 }
