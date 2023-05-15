@@ -28,7 +28,7 @@ import { GiveAnAnswerCommand } from '../../application/use-cases/give-an-answer.
 import { GetAnswerInputModelDTO } from '../models/get-answer-input-model.DTO';
 import { QueryGameDTO } from '../models/query-game.DTO';
 
-@Controller('pair-game-quiz/pairs')
+@Controller('pair-game-quiz')
 export class QuizController {
   constructor(
     private commandBus: CommandBus,
