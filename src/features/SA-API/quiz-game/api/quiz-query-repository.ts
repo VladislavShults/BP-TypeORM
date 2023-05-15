@@ -97,7 +97,7 @@ export class QuizQueryRepository {
       .leftJoinAndSelect('p.questions', 'questions')
       .leftJoinAndSelect('p.firstPlayer', 'user')
       .leftJoinAndSelect('p.secondPlayer', 'user1')
-      .addOrderBy('answers.addedAt', 'ASC')
+      .orderBy('answers.addedAt', 'ASC')
       .addOrderBy('questions.createdAt', 'ASC')
       .getOne();
 

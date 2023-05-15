@@ -35,7 +35,7 @@ export class QuizController {
     private quizGameQueryRepo: QuizQueryRepository,
   ) {}
 
-  @Get('my')
+  @Get('pairs/my')
   @UseGuards(JwtAuthGuard)
   async getAllMyGames(
     @Query() query: QueryGameDTO,
@@ -46,7 +46,7 @@ export class QuizController {
     return this.quizGameQueryRepo.getAllPairsByUserId(userId, query);
   }
 
-  @Get('my-statistic')
+  @Get('pairs/my-statistic')
   @UseGuards(JwtAuthGuard)
   async getStatistic(@Request() req): Promise<Statistic> {
     const userId: string = req.user.id.toString();
@@ -54,7 +54,15 @@ export class QuizController {
     return this.quizGameQueryRepo.getStatistic(userId);
   }
 
-  @Post('connection')
+  @Get('users/my-statistic')
+  @UseGuards(JwtAuthGuard)
+  async getStatisticUser(@Request() req): Promise<Statistic> {
+    const userId: string = req.user.id.toString();
+
+    return this.quizGameQueryRepo.getStatistic(userId);
+  }
+
+  @Post('pairs/connection')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, CheckUserInNotFinishedPairGuard)
   async createNewPairOrConnection(@Request() req): Promise<GamePairViewModel> {
@@ -67,7 +75,7 @@ export class QuizController {
     return this.quizGameQueryRepo.getPairById(pairId);
   }
 
-  @Get('my-current')
+  @Get('pairs/my-current')
   @UseGuards(JwtAuthGuard)
   async getCurrentNotFinishedGame(@Request() req): Promise<GamePairViewModel> {
     const userId: string = req.user.id.toString();
@@ -79,7 +87,7 @@ export class QuizController {
     return this.quizGameQueryRepo.getPairById(activeGame.id);
   }
 
-  @Get(':id')
+  @Get('pairs/:id')
   @UseGuards(JwtAuthGuard)
   async getAllStatusGameById(
     @Param() params: GetAnswerInputModelDTO,
@@ -98,7 +106,7 @@ export class QuizController {
     }
   }
 
-  @Post('my-current/answers')
+  @Post('pairs/my-current/answers')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, CheckActivePairByIdAndUserIdGuard)
   async createAnswer(
