@@ -20,6 +20,7 @@ import {
   AnswersViewModel,
   GamePairsViewModelWithPagination,
   GamePairViewModel,
+  Statistic,
 } from '../../../../SA-API/quiz-game/types/quiz.types';
 import { CheckActivePairByIdAndUserIdGuard } from '../../guards/check-user-in-active-pair';
 import { AnswerInputModelDto } from '../models/answer-input-model.dto';
@@ -43,6 +44,14 @@ export class QuizController {
     const userId: string = req.user.id.toString();
 
     return this.quizGameQueryRepo.getAllPairsByUserId(userId, query);
+  }
+
+  @Get('my-statistic')
+  @UseGuards(JwtAuthGuard)
+  async getStatistic(@Request() req): Promise<Statistic> {
+    const userId: string = req.user.id.toString();
+
+    return this.quizGameQueryRepo.getStatistic(userId);
   }
 
   @Post('connection')

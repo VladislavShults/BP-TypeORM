@@ -72,3 +72,12 @@ export type GamePairsViewModelWithPagination = {
   totalCount: number;
   items: GamePairViewModel[];
 };
+
+export type Statistic = {
+  sumScore: number;
+  avgScores: number;
+  gamesCount: number;
+  winsCount: number;
+  lossesCount: number;
+  drawsCount: number;
+};

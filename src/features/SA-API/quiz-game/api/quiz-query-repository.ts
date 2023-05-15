@@ -7,6 +7,7 @@ import {
   GamePairViewModel,
   QuestionsWithPagination,
   QuestionViewModel,
+  Statistic,
 } from '../types/quiz.types';
 import { QueryQuestionsDto } from './models/query-questions.dto';
 import { mapQuestionDbToViewType } from '../helpers/map-question-db-to-view';
@@ -174,6 +175,69 @@ export class QuizQueryRepository {
       pageSize: pageSize,
       totalCount: Number(totalCount),
       items,
+    };
+  }
+
+  async getStatistic(userId: string): Promise<Statistic> {
+    const subQueryGetWinnerCount = await this.pairsRepo
+      .createQueryBuilder('game')
+      .select('COUNT(*)')
+      .where(
+        'game."firstPlayerId" = :userId OR game."secondPlayerId" = :userId',
+      )
+      .andWhere(
+        'CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END > CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END',
+      );
+
+    const subQueryGetLossCount = await this.pairsRepo
+      .createQueryBuilder('game')
+      .select('COUNT(*)')
+      .where(
+        'game."firstPlayerId" = :userId OR game."secondPlayerId" = :userId',
+      )
+      .andWhere(
+        'CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END < CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END',
+      );
+
+    const subQueryCountGame = await this.pairsRepo
+      .createQueryBuilder('game')
+      .select('COUNT(*)')
+      .where(
+        'game."firstPlayerId" = :userId OR game."secondPlayerId" = :userId',
+      );
+
+    const subQueryDrawCount = await this.pairsRepo
+      .createQueryBuilder('game')
+      .select('COUNT(*)')
+      .where(
+        'game."firstPlayerId" = :userId OR game."secondPlayerId" = :userId',
+      )
+      .andWhere('game."scoreFirstPlayer" = game."scoreSecondPlayer"');
+
+    const result = await this.pairsRepo
+      .createQueryBuilder()
+      .select(
+        'SUM(CASE WHEN "firstPlayerId" = :userId THEN "scoreFirstPlayer" ELSE "scoreSecondPlayer" END)',
+        'sumScore',
+      )
+      .addSelect(`(${subQueryGetWinnerCount.getQuery()})`, 'winsCount')
+      .addSelect(`(${subQueryGetLossCount.getQuery()})`, 'lossesCount')
+      .addSelect(`(${subQueryCountGame.getQuery()})`, 'gamesCount')
+      .addSelect(`(${subQueryDrawCount.getQuery()})`, 'drawsCount')
+      .where('"firstPlayerId" = :userId OR "secondPlayerId" = :userId', {
+        userId,
+      })
+      .getRawOne();
+
+    return {
+      sumScore: Number(result.sumScore),
+      avgScores: Number(
+        (Number(result.sumScore) / Number(result.gamesCount)).toFixed(2),
+      ),
+      gamesCount: Number(result.gamesCount),
+      winsCount: Number(result.winsCount),
+      lossesCount: Number(result.lossesCount),
+      drawsCount: Number(result.drawsCount),
     };
   }
 }
