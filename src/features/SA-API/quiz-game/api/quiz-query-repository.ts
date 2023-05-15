@@ -90,15 +90,17 @@ export class QuizQueryRepository {
   }
 
   async getPairById(pairId: string): Promise<GamePairViewModel> {
-    const pair = await this.pairsRepo.findOne({
-      where: { id: pairId },
-      relations: {
-        firstPlayer: true,
-        secondPlayer: true,
-        answers: true,
-        questions: true,
-      },
-    });
+    const pair = await this.pairsRepo
+      .createQueryBuilder('p')
+      .where({ id: pairId })
+      .leftJoinAndSelect('p.answers', 'answers')
+      .leftJoinAndSelect('p.questions', 'questions')
+      .leftJoinAndSelect('p.firstPlayer', 'user')
+      .leftJoinAndSelect('p.secondPlayer', 'user1')
+      .addOrderBy('answers.addedAt', 'ASC')
+      .addOrderBy('questions.createdAt', 'ASC')
+      .getOne();
+
     return mapDBPairToViewModel(pair);
   }
 
@@ -131,28 +133,10 @@ export class QuizQueryRepository {
   ): Promise<GamePairsViewModelWithPagination> {
     const { sortBy, sortDirection, pageSize, pageNumber } = query;
 
-    // const pairs = await this.pairsRepo.findAndCount({
-    //   where: [{ firstPlayerId: userId }, { secondPlayerId: userId }],
-    //   relations: {
-    //     answers: true,
-    //     questions: true,
-    //     firstPlayer: true,
-    //     secondPlayer: true,
-    //   },
-    //   order: { status: 'ASC', pairCreatedDate: 'DESC' },
-    //   skip: (pageNumber - 1) * pageSize,
-    //   take: pageSize,
-    // });
-
     const pairs = await this.pairsRepo
       .createQueryBuilder('p')
-      .where(
-        'p."firstPlayerId" = :firstPlayer OR p."secondPlayerId" = :secondPlayer',
-        {
-          firstPlayer: userId,
-          secondPlayer: userId,
-        },
-      )
+      .where({ firstPlayer: userId })
+      .orWhere({ secondPlayer: userId })
       .orderBy('"' + sortBy + '"', sortDirection)
       .skip((pageNumber - 1) * pageSize)
       // .limit(pageSize)
@@ -231,9 +215,12 @@ export class QuizQueryRepository {
 
     return {
       sumScore: Number(result.sumScore),
-      avgScores: Number(
-        (Number(result.sumScore) / Number(result.gamesCount)).toFixed(2),
-      ),
+      avgScores:
+        Number(result.gamesCount) !== 0
+          ? Number(
+              (Number(result.sumScore) / Number(result.gamesCount)).toFixed(2),
+            )
+          : 0,
       gamesCount: Number(result.gamesCount),
       winsCount: Number(result.winsCount),
       lossesCount: Number(result.lossesCount),
