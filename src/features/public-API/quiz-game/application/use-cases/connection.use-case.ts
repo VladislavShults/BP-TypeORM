@@ -44,6 +44,8 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
         const randomQuestions =
           await this.quizGameRepository.getFiveRandomQuestions();
 
+        randomQuestions.sort((a, b) => +a.createdAt - +b.createdAt);
+
         pairWithoutSecondPlayer.secondPlayerId = command.userId;
         pairWithoutSecondPlayer.status = StatusGame.Active;
         pairWithoutSecondPlayer.startGameDate = new Date();

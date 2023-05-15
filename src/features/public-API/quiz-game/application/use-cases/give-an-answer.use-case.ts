@@ -31,10 +31,17 @@ export class GiveAnAnswerUseCase
         queryRunner.manager,
       );
 
+      const answersActiveGame =
+        await this.quizGameRepository.getAnswersActiveGame(
+          activeGame.id,
+          activeGame.firstPlayerId,
+          activeGame.secondPlayerId,
+        );
+
       const activePairWithAnswersAndQuestions =
         await this.quizGameRepository.findNotFinishedPair(command.userId);
 
-      activeGame.answers = activePairWithAnswersAndQuestions.answers;
+      activeGame.answers = answersActiveGame;
 
       activeGame.questions = activePairWithAnswersAndQuestions.questions;
 

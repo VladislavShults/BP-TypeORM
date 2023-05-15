@@ -1,4 +1,4 @@
-import { EntityManager, Not, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { QuizGameQuestion } from '../entities/quiz-game-question.entity';
 import { Injectable } from '@nestjs/common';
 import { QuestionDbType } from '../types/quiz.types';
@@ -90,8 +90,8 @@ export class QuizGameRepository {
 
   async getFiveRandomQuestions() {
     return this.questionsRepo
-      .createQueryBuilder()
-      .where('published = true')
+      .createQueryBuilder('question')
+      .where({ published: true })
       .orderBy('RANDOM()')
       .limit(5)
       .getMany();
@@ -105,13 +105,16 @@ export class QuizGameRepository {
   }
 
   async findNotFinishedPair(userId: string): Promise<QuizGame> {
-    return this.pairsRepo.findOne({
-      where: [
-        { firstPlayerId: userId, status: Not(StatusGame.Finished) },
-        { secondPlayerId: userId, status: Not(StatusGame.Finished) },
-      ],
-      relations: { answers: true, questions: true },
-    });
+    return (
+      this.pairsRepo
+        .createQueryBuilder('game')
+        // .setLock('pessimistic_write')
+        .leftJoinAndSelect('game.answers', 'answers')
+        .leftJoinAndSelect('game.questions', 'questions')
+        .where({ firstPlayerId: userId, status: StatusGame.Active })
+        .orWhere({ secondPlayerId: userId, status: StatusGame.Active })
+        .getOne()
+    );
   }
 
   async findActivePair(
@@ -137,4 +140,22 @@ export class QuizGameRepository {
         .getOne()
     );
   }
+
+  async getAnswersActiveGame(
+    gameId: string,
+    firstPlayerId: string,
+    secondPlayerId: string,
+  ) {
+    return this.answersRepo.find({
+      where: [
+        { quizGameId: gameId, userId: firstPlayerId },
+        { quizGameId: gameId, userId: secondPlayerId },
+      ],
+      order: { addedAt: 'ASC' },
+    });
+  }
+
+  // async getQuestionsActiveGame(gameId: string) {
+  //   return this.questionsRepo.createQueryBuilder('q').
+  // }
 }

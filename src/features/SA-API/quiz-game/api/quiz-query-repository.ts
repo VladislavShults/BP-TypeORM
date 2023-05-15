@@ -157,9 +157,11 @@ export class QuizQueryRepository {
       // .limit(pageSize)
       .addOrderBy('p."pairCreatedDate"', 'DESC')
       .leftJoinAndSelect('p.answers', 'answers')
-      .leftJoinAndSelect('p.questions', 'game')
+      .leftJoinAndSelect('p.questions', 'questions')
       .leftJoinAndSelect('p.firstPlayer', 'user')
       .leftJoinAndSelect('p.secondPlayer', 'user1')
+      .addOrderBy('answers.addedAt', 'ASC')
+      .addOrderBy('questions.createdAt', 'ASC')
       .getManyAndCount();
 
     const items = pairs[0].map((p) => mapDBPairToViewModel(p));
