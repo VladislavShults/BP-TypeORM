@@ -135,8 +135,8 @@ export class QuizQueryRepository {
 
     const pairs = await this.pairsRepo
       .createQueryBuilder('p')
-      .where({ firstPlayer: userId })
-      .orWhere({ secondPlayer: userId })
+      .where({ firstPlayerId: userId })
+      .orWhere({ secondPlayerId: userId })
       .orderBy('"' + sortBy + '"', sortDirection)
       .skip((pageNumber - 1) * pageSize)
       // .limit(pageSize)
