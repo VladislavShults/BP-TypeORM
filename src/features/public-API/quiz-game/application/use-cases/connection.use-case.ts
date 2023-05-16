@@ -25,6 +25,8 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
           queryRunner.manager,
         );
 
+      // await this.wait(10);
+
       if (!pairWithoutSecondPlayer) {
         const newPair = new QuizGame();
         newPair.id = randomUUID();
@@ -64,4 +66,8 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
       await queryRunner.release();
     }
   }
+
+  // private wait(sec) {
+  //   return new Promise((resolve) => setTimeout(resolve, sec * 1000));
+  // }
 }

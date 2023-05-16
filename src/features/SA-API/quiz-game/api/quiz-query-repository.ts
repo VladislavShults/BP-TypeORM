@@ -167,20 +167,20 @@ export class QuizQueryRepository {
       .createQueryBuilder('game')
       .select('COUNT(*)')
       .where(
-        'game."firstPlayerId" = :userId OR game."secondPlayerId" = :userId',
+        '"firstPlayerId" = :userId AND (CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END > CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
       )
-      .andWhere(
-        'CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END > CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END',
+      .orWhere(
+        '"secondPlayerId" = :userId AND (CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END > CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
       );
 
     const subQueryGetLossCount = await this.pairsRepo
       .createQueryBuilder('game')
       .select('COUNT(*)')
       .where(
-        'game."firstPlayerId" = :userId OR game."secondPlayerId" = :userId',
+        '"firstPlayerId" = :userId AND (CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END < CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
       )
-      .andWhere(
-        'CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END < CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END',
+      .orWhere(
+        '"secondPlayerId" = :userId AND (CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END < CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
       );
 
     const subQueryCountGame = await this.pairsRepo
@@ -194,9 +194,11 @@ export class QuizQueryRepository {
       .createQueryBuilder('game')
       .select('COUNT(*)')
       .where(
-        'game."firstPlayerId" = :userId OR game."secondPlayerId" = :userId',
+        'game."firstPlayerId" = :userId AND game."scoreFirstPlayer" = game."scoreSecondPlayer"',
       )
-      .andWhere('game."scoreFirstPlayer" = game."scoreSecondPlayer"');
+      .orWhere(
+        'game."secondPlayerId" = :userId AND game."scoreFirstPlayer" = game."scoreSecondPlayer"',
+      );
 
     const result = await this.pairsRepo
       .createQueryBuilder()
