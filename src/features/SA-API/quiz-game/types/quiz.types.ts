@@ -65,11 +65,7 @@ export type GamePairViewModel = {
   finishGameDate: Date | null;
 };
 
-export type GamePairsViewModelWithPagination = {
-  pagesCount: number;
-  page: number;
-  pageSize: number;
-  totalCount: number;
+export type GamePairsViewModelWithPagination = Pagination & {
   items: GamePairViewModel[];
 };
 
@@ -80,4 +76,17 @@ export type Statistic = {
   winsCount: number;
   lossesCount: number;
   drawsCount: number;
+};
+
+type StatisticWithUser = Statistic & { player: { id: string; login: string } };
+
+type Pagination = {
+  pagesCount: number;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
+
+export type StatisticWithPagination = Pagination & {
+  items: StatisticWithUser[];
 };

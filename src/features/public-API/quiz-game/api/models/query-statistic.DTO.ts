@@ -1,21 +1,10 @@
-import {
-  IsIn,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { toNumber } from '../../../blogs/helpers/cast.helper';
 
-export class QueryGameDTO {
+export class QueryStatisticDTO {
   @IsNotEmpty()
-  @IsString()
-  sort = 'pairCreatedDate';
-
-  @IsIn(['ASC', 'DESC'])
-  @Transform((sortDir) => sortDir.value.toUpperCase())
-  sortDirection: 'ASC' | 'DESC' = 'DESC';
+  sort = ['avgScores desc', 'sumScore desc'];
 
   @Transform(({ value }) => toNumber(value, { default: 1, min: 1 }))
   @IsNumber()

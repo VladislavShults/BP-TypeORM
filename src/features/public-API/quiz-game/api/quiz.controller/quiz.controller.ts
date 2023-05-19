@@ -21,12 +21,14 @@ import {
   GamePairsViewModelWithPagination,
   GamePairViewModel,
   Statistic,
+  StatisticWithPagination,
 } from '../../../../SA-API/quiz-game/types/quiz.types';
 import { CheckActivePairByIdAndUserIdGuard } from '../../guards/check-user-in-active-pair';
 import { AnswerInputModelDto } from '../models/answer-input-model.dto';
 import { GiveAnAnswerCommand } from '../../application/use-cases/give-an-answer.use-case';
 import { GetAnswerInputModelDTO } from '../models/get-answer-input-model.DTO';
 import { QueryGameDTO } from '../models/query-game.DTO';
+import { QueryStatisticDTO } from '../models/query-statistic.DTO';
 
 @Controller('pair-game-quiz')
 export class QuizController {
@@ -44,6 +46,13 @@ export class QuizController {
     const userId: string = req.user.id.toString();
 
     return this.quizGameQueryRepo.getAllPairsByUserId(userId, query);
+  }
+
+  @Get('users/top')
+  async getStatisticAllUsers(
+    @Query() query: QueryStatisticDTO,
+  ): Promise<StatisticWithPagination> {
+    return this.quizGameQueryRepo.getStatisticAllUsers(query);
   }
 
   @Get('pairs/my-statistic')

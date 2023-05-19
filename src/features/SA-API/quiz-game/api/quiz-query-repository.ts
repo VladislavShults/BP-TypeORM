@@ -8,6 +8,7 @@ import {
   QuestionsWithPagination,
   QuestionViewModel,
   Statistic,
+  StatisticWithPagination,
 } from '../types/quiz.types';
 import { QueryQuestionsDto } from './models/query-questions.dto';
 import { mapQuestionDbToViewType } from '../helpers/map-question-db-to-view';
@@ -17,6 +18,10 @@ import {
 } from '../../../public-API/quiz-game/entities/quiz-game.entity';
 import { mapDBPairToViewModel } from '../../../public-API/quiz-game/helpers/mapDBPairToViewModel';
 import { QueryGameDTO } from '../../../public-API/quiz-game/api/models/query-game.DTO';
+import { mapDBStatisticToViewStatistic } from '../../../public-API/quiz-game/helpers/mapDBStatisticToViewStatistic';
+import { User } from '../../users/entities/user.entity';
+import { mapDBStatisticWithUserToViewStatistic } from '../../../public-API/quiz-game/helpers/mapDBStatisticWithUserToViewStatistic';
+import { QueryStatisticDTO } from '../../../public-API/quiz-game/api/models/query-statistic.DTO';
 
 @Injectable()
 export class QuizQueryRepository {
@@ -25,6 +30,8 @@ export class QuizQueryRepository {
     private questionsRepo: Repository<QuizGameQuestion>,
     @InjectRepository(QuizGame)
     private pairsRepo: Repository<QuizGame>,
+    @InjectRepository(User)
+    private usersRepo: Repository<User>,
   ) {}
 
   async getQuestionById(id: string): Promise<QuestionViewModel> {
@@ -131,13 +138,13 @@ export class QuizQueryRepository {
     userId: string,
     query: QueryGameDTO,
   ): Promise<GamePairsViewModelWithPagination> {
-    const { sortBy, sortDirection, pageSize, pageNumber } = query;
+    const { sort, sortDirection, pageSize, pageNumber } = query;
 
     const pairs = await this.pairsRepo
       .createQueryBuilder('p')
       .where({ firstPlayerId: userId })
       .orWhere({ secondPlayerId: userId })
-      .orderBy('"' + sortBy + '"', sortDirection)
+      .orderBy('"' + sort + '"', sortDirection)
       .skip((pageNumber - 1) * pageSize)
       // .limit(pageSize)
       .addOrderBy('p."pairCreatedDate"', 'DESC')
@@ -215,18 +222,89 @@ export class QuizQueryRepository {
       })
       .getRawOne();
 
+    return result.map((r) => mapDBStatisticToViewStatistic(r));
+  }
+
+  async getStatisticAllUsers(
+    query: QueryStatisticDTO,
+  ): Promise<StatisticWithPagination> {
+    let { sort } = query;
+
+    const { pageSize, pageNumber } = query;
+
+    if (typeof sort === 'string') sort = [sort];
+
+    const sortFields: string[] = [];
+    const sortOrders: string[] = [];
+
+    // Разбиваем строку запроса на отдельные части
+    sort.forEach((part) => {
+      const [field, order] = part.split(' ');
+      sortFields.push(field);
+      sortOrders.push(order.toLocaleUpperCase());
+    });
+
+    const queryTypeOrm = this.pairsRepo
+      .createQueryBuilder('game')
+      .select(
+        'SUM(CASE WHEN game."firstPlayerId" = user.id THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
+        'sumScore',
+      )
+      .addSelect(
+        'ROUND(AVG(CASE WHEN game.firstPlayerId = user.id THEN game.scoreFirstPlayer ELSE game.scoreSecondPlayer END), 2)',
+        'avgScores',
+      )
+      .addSelect('COUNT(game.id)', 'gamesCount')
+      .addSelect(
+        `SUM(CASE WHEN game."firstPlayerId" = user.id AND game."scoreFirstPlayer" > game."scoreSecondPlayer" THEN 1
+                     WHEN game."secondPlayerId" = user.id AND game."scoreSecondPlayer" > game."scoreFirstPlayer" THEN 1
+                     ELSE 0 END)`,
+        'winsCount',
+      )
+      .addSelect(
+        `SUM(CASE WHEN game."firstPlayerId" = user.id AND game."scoreFirstPlayer" < game."scoreSecondPlayer" THEN 1
+                     WHEN game."secondPlayerId" = user.id AND game."scoreSecondPlayer" < game."scoreFirstPlayer" THEN 1
+                     ELSE 0 END)`,
+        'lossesCount',
+      )
+      .addSelect(
+        `SUM(CASE WHEN game."firstPlayerId" = user.id AND game."scoreFirstPlayer" = game."scoreSecondPlayer" THEN 1
+        WHEN game."secondPlayerId" = user.id AND game."scoreFirstPlayer" = game."scoreSecondPlayer" THEN 1
+        ELSE 0 END)`,
+        'drawsCount',
+      )
+      .addSelect('user.id', 'id')
+      .addSelect('user.login', 'login')
+      .addSelect('COUNT(user.id)', 'totalCount')
+      .innerJoin(
+        User,
+        'user',
+        'game."firstPlayerId" = user.id OR game."secondPlayerId" = user.id',
+      )
+      .groupBy('user.id');
+
+    // Добавляем сортировку в запрос
+    for (let i = 0; i < sortFields.length; i++) {
+      const field = sortFields[i];
+      const order = sortOrders[i];
+      if (i === 0) queryTypeOrm.orderBy(`"${field}"`, order as 'ASC' | 'DESC');
+      else queryTypeOrm.addOrderBy(`"${field}"`, order as 'ASC' | 'DESC');
+    }
+
+    queryTypeOrm.offset((pageNumber - 1) * pageSize).limit(pageSize);
+
+    const results = await queryTypeOrm.getRawMany();
+
+    const items = results.map((r) => mapDBStatisticWithUserToViewStatistic(r));
+
+    const totalCount = Number(results[0].totalCount);
+
     return {
-      sumScore: Number(result.sumScore),
-      avgScores:
-        Number(result.gamesCount) !== 0
-          ? Number(
-              (Number(result.sumScore) / Number(result.gamesCount)).toFixed(2),
-            )
-          : 0,
-      gamesCount: Number(result.gamesCount),
-      winsCount: Number(result.winsCount),
-      lossesCount: Number(result.lossesCount),
-      drawsCount: Number(result.drawsCount),
+      pagesCount: Math.ceil(totalCount / pageSize),
+      page: pageNumber,
+      pageSize: pageSize,
+      totalCount: Number(totalCount),
+      items,
     };
   }
 }
