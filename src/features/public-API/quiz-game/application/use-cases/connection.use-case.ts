@@ -39,7 +39,14 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
         newPair.scoreFirstPlayer = 0;
         newPair.scoreSecondPlayer = 0;
 
-        return this.quizGameRepository.save(newPair);
+        const newGame = await this.quizGameRepository.saveInTransaction(
+          newPair,
+          queryRunner.manager,
+        );
+
+        await queryRunner.commitTransaction();
+
+        return newGame.id;
       } else {
         const randomQuestions =
           await this.quizGameRepository.getFiveRandomQuestions();
@@ -51,12 +58,14 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
         pairWithoutSecondPlayer.startGameDate = new Date();
         pairWithoutSecondPlayer.questions = randomQuestions;
 
-        await this.quizGameRepository.saveInTransaction(
+        const pair = await this.quizGameRepository.saveInTransaction(
           pairWithoutSecondPlayer,
           queryRunner.manager,
         );
+
         await queryRunner.commitTransaction();
-        return pairWithoutSecondPlayer.id;
+
+        return pair.id;
       }
     } catch (err) {
       await queryRunner.rollbackTransaction();

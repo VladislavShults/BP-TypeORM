@@ -97,37 +97,14 @@ export class QuizGameRepository {
       .getMany();
   }
 
-  async saveInTransaction(
-    pairWithoutSecondPlayer: QuizGame,
-    manager: EntityManager,
-  ) {
-    return manager.save(pairWithoutSecondPlayer);
-  }
-
-  async findNotFinishedPair(userId: string): Promise<QuizGame> {
-    return (
-      this.pairsRepo
-        .createQueryBuilder('game')
-        // .setLock('pessimistic_write')
-        .leftJoinAndSelect('game.answers', 'answers')
-        .leftJoinAndSelect('game.questions', 'questions')
-        .where({ firstPlayerId: userId, status: StatusGame.Active })
-        .orWhere({ secondPlayerId: userId, status: StatusGame.Active })
-        .getOne()
-    );
+  async saveInTransaction(game: QuizGame, manager: EntityManager) {
+    return manager.save(game);
   }
 
   async findActivePair(
     userId: string,
     manager: EntityManager,
   ): Promise<QuizGame> {
-    // return this.pairsRepo.findOne({
-    //   where: [
-    //     { firstPlayerId: userId, status: Not(StatusGame.Finished) },
-    //     { secondPlayerId: userId, status: Not(StatusGame.Finished) },
-    //   ],
-    //   relations: { answers: true, questions: true },
-    // });
     return (
       manager
         .getRepository(QuizGame)
@@ -141,21 +118,18 @@ export class QuizGameRepository {
     );
   }
 
-  async getAnswersActiveGame(
-    gameId: string,
-    firstPlayerId: string,
-    secondPlayerId: string,
-  ) {
+  async getAnswersActiveGame(gameId: string, playerId: string) {
     return this.answersRepo.find({
-      where: [
-        { quizGameId: gameId, userId: firstPlayerId },
-        { quizGameId: gameId, userId: secondPlayerId },
-      ],
+      where: [{ quizGameId: gameId, userId: playerId }],
       order: { addedAt: 'ASC' },
     });
   }
 
-  // async getQuestionsActiveGame(gameId: string) {
-  //   return this.questionsRepo.createQueryBuilder('q').
-  // }
+  async getQuestionsByActiveGame(gameId: string): Promise<QuizGameQuestion[]> {
+    const pairWithQuestions = await this.pairsRepo.find({
+      where: { id: gameId },
+      relations: { questions: true },
+    });
+    return pairWithQuestions[0].questions;
+  }
 }

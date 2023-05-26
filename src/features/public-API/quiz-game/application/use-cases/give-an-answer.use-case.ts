@@ -4,9 +4,9 @@ import { AnswersViewModel } from '../../../../SA-API/quiz-game/types/quiz.types'
 import { StatusGame } from '../../entities/quiz-game.entity';
 import { Answer, AnswerStatus } from '../../entities/quiz-game-answers.entity';
 import { randomUUID } from 'crypto';
-import { filterResponsesFromAGivenUser } from '../../helpers/filterResponsesFromAGivenUser';
 import { ForbiddenException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { QuizGameQuestion } from '../../../../SA-API/quiz-game/entities/quiz-game-question.entity';
 
 export class GiveAnAnswerCommand {
   constructor(public userId: string, public answer: string) {}
@@ -31,28 +31,35 @@ export class GiveAnAnswerUseCase
         queryRunner.manager,
       );
 
-      const answersActiveGame =
+      const answersActiveGameByFirstPlayer =
         await this.quizGameRepository.getAnswersActiveGame(
           activeGame.id,
           activeGame.firstPlayerId,
+        );
+
+      const answersActiveGameBySecondPlayer =
+        await this.quizGameRepository.getAnswersActiveGame(
+          activeGame.id,
           activeGame.secondPlayerId,
         );
 
-      const activePairWithAnswersAndQuestions =
-        await this.quizGameRepository.findNotFinishedPair(command.userId);
+      activeGame.answers = [
+        ...answersActiveGameByFirstPlayer,
+        ...answersActiveGameBySecondPlayer,
+      ];
 
-      activeGame.answers = answersActiveGame;
+      const questionsByActivePair =
+        await this.quizGameRepository.getQuestionsByActiveGame(activeGame.id);
 
-      activeGame.questions = activePairWithAnswersAndQuestions.questions;
-
-      const answersAboutUser = filterResponsesFromAGivenUser(
-        activeGame,
-        command.userId,
-      );
+      const answersAboutUser =
+        activeGame.firstPlayerId == command.userId
+          ? answersActiveGameByFirstPlayer
+          : answersActiveGameBySecondPlayer;
 
       if (answersAboutUser.length >= 5) throw new ForbiddenException();
 
-      const question = activeGame.questions[answersAboutUser.length];
+      const question: QuizGameQuestion =
+        questionsByActivePair[answersAboutUser.length];
 
       const answerIsCorrect = question.correctAnswers.find(
         (q) => q === command.answer,
@@ -87,7 +94,7 @@ export class GiveAnAnswerUseCase
 
       if (activeGame.answers.length === 10) {
         // Пользователь давший последний ответ
-        const userIdPlayerGaveLastAnswer = activeGame.answers[9].userId;
+        const userIdPlayerGaveLastAnswer = command.userId;
 
         //Проверка наличия корректного ответа у пользователя первым ответившим на вопросы
         const correctAnswersFirstResponder = activeGame.answers.filter(

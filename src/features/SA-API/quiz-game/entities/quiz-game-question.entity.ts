@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryColumn } from 'typeorm';
+import { QuizGame } from '../../../public-API/quiz-game/entities/quiz-game.entity';
 
 @Entity()
 export class QuizGameQuestion {
@@ -22,4 +23,7 @@ export class QuizGameQuestion {
 
   @Column()
   isDeleted: boolean;
+
+  @ManyToMany(() => QuizGame, { cascade: true })
+  game: QuizGame[];
 }
