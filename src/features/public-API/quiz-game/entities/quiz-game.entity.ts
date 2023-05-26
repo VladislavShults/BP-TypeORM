@@ -55,6 +55,9 @@ export class QuizGame {
 
   @Column()
   scoreSecondPlayer: number;
+
+  @Column({ nullable: true })
+  winner: string;
 }
 
 export enum StatusGame {

@@ -170,59 +170,41 @@ export class QuizQueryRepository {
   }
 
   async getStatistic(userId: string): Promise<Statistic> {
-    const subQueryGetWinnerCount = await this.pairsRepo
-      .createQueryBuilder('game')
-      .select('COUNT(*)')
-      .where(
-        '"firstPlayerId" = :userId AND (CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END > CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
-      )
-      .orWhere(
-        '"secondPlayerId" = :userId AND (CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END > CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
-      );
-
-    const subQueryGetLossCount = await this.pairsRepo
-      .createQueryBuilder('game')
-      .select('COUNT(*)')
-      .where(
-        '"firstPlayerId" = :userId AND (CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END < CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
-      )
-      .orWhere(
-        '"secondPlayerId" = :userId AND (CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END < CASE WHEN game."firstPlayerId" <> :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
-      );
-
-    const subQueryCountGame = await this.pairsRepo
-      .createQueryBuilder('game')
-      .select('COUNT(*)')
-      .where(
-        'game."firstPlayerId" = :userId OR game."secondPlayerId" = :userId',
-      );
-
-    const subQueryDrawCount = await this.pairsRepo
-      .createQueryBuilder('game')
-      .select('COUNT(*)')
-      .where(
-        'game."firstPlayerId" = :userId AND game."scoreFirstPlayer" = game."scoreSecondPlayer"',
-      )
-      .orWhere(
-        'game."secondPlayerId" = :userId AND game."scoreFirstPlayer" = game."scoreSecondPlayer"',
-      );
-
     const result = await this.pairsRepo
-      .createQueryBuilder()
+      .createQueryBuilder('game')
       .select(
-        'SUM(CASE WHEN "firstPlayerId" = :userId THEN "scoreFirstPlayer" ELSE "scoreSecondPlayer" END)',
+        'SUM(CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END)',
         'sumScore',
       )
-      .addSelect(`(${subQueryGetWinnerCount.getQuery()})`, 'winsCount')
-      .addSelect(`(${subQueryGetLossCount.getQuery()})`, 'lossesCount')
-      .addSelect(`(${subQueryCountGame.getQuery()})`, 'gamesCount')
-      .addSelect(`(${subQueryDrawCount.getQuery()})`, 'drawsCount')
+      .addSelect(
+        'ROUND(AVG(CASE WHEN game.firstPlayerId = :userId THEN game.scoreFirstPlayer ELSE game.scoreSecondPlayer END), 2)',
+        'avgScores',
+      )
+      .addSelect('COUNT(game.id)', 'gamesCount')
+      .addSelect(
+        `SUM(CASE WHEN game."winner" = :userId THEN 1
+                     ELSE 0 END)`,
+        'winsCount',
+      )
+      .addSelect(
+        `SUM(CASE WHEN game."firstPlayerId" = :userId AND game.winner = CAST(game."secondPlayerId" AS CHAR) THEN 1
+                     WHEN game."secondPlayerId" = :userId AND game.winner = CAST(game."firstPlayerId" AS CHAR) THEN 1
+                     ELSE 0 END)`,
+        'lossesCount',
+      )
+      .addSelect(
+        `SUM(CASE WHEN game."firstPlayerId" = :userId AND game."winner" = :draw THEN 1
+        WHEN game."secondPlayerId" = :userId AND game."winner" = :draw THEN 1
+        ELSE 0 END)`,
+        'drawsCount',
+      )
       .where('"firstPlayerId" = :userId OR "secondPlayerId" = :userId', {
         userId,
+        draw: 'draw',
       })
       .getRawOne();
 
-    return result.map((r) => mapDBStatisticToViewStatistic(r));
+    return mapDBStatisticToViewStatistic(result);
   }
 
   async getStatisticAllUsers(

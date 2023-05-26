@@ -112,6 +112,13 @@ export class GiveAnAnswerUseCase
 
         activeGame.finishGameDate = new Date();
         activeGame.status = StatusGame.Finished;
+
+        if (activeGame.scoreFirstPlayer > activeGame.scoreSecondPlayer)
+          activeGame.winner = activeGame.firstPlayerId;
+        if (activeGame.scoreFirstPlayer < activeGame.scoreSecondPlayer)
+          activeGame.winner = activeGame.secondPlayerId;
+        if (activeGame.scoreFirstPlayer === activeGame.scoreSecondPlayer)
+          activeGame.winner = 'draw';
       }
 
       await this.quizGameRepository.saveInTransaction(
