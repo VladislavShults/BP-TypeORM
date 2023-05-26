@@ -3,6 +3,9 @@ interface ToNumberOptions {
   min?: number;
   max?: number;
 }
+interface ToArrayOptions {
+  default?: string[];
+}
 
 export function toNumber(value: string, opts: ToNumberOptions = {}): number {
   let newValue: number = Number.parseInt(value || String(opts.default), 10);
@@ -19,6 +22,21 @@ export function toNumber(value: string, opts: ToNumberOptions = {}): number {
     if (newValue > opts.max) {
       newValue = opts.max;
     }
+  }
+
+  return newValue;
+}
+
+export function toArray(
+  value: string | string[],
+  opts: ToArrayOptions,
+): string[] {
+  let newValue: string[];
+
+  if (typeof value === 'string') newValue = [value];
+
+  if (value === undefined) {
+    newValue = opts.default;
   }
 
   return newValue;

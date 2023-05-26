@@ -177,7 +177,7 @@ export class QuizQueryRepository {
         'sumScore',
       )
       .addSelect(
-        'ROUND(AVG(CASE WHEN game.firstPlayerId = :userId THEN game.scoreFirstPlayer ELSE game.scoreSecondPlayer END), 2)',
+        'ROUND(AVG(CASE WHEN game."firstPlayerId" = :userId THEN game."scoreFirstPlayer" ELSE game."scoreSecondPlayer" END), 2)',
         'avgScores',
       )
       .addSelect('COUNT(game.id)', 'gamesCount')
@@ -210,11 +210,9 @@ export class QuizQueryRepository {
   async getStatisticAllUsers(
     query: QueryStatisticDTO,
   ): Promise<StatisticWithPagination> {
-    let { sort } = query;
+    const { sort } = query;
 
     const { pageSize, pageNumber } = query;
-
-    if (typeof sort === 'string') sort = [sort];
 
     const sortFields: string[] = [];
     const sortOrders: string[] = [];
@@ -238,20 +236,19 @@ export class QuizQueryRepository {
       )
       .addSelect('COUNT(game.id)', 'gamesCount')
       .addSelect(
-        `SUM(CASE WHEN game."firstPlayerId" = user.id AND game."scoreFirstPlayer" > game."scoreSecondPlayer" THEN 1
-                     WHEN game."secondPlayerId" = user.id AND game."scoreSecondPlayer" > game."scoreFirstPlayer" THEN 1
+        `SUM(CASE WHEN game."winner" = CAST(user.id AS TEXT) THEN 1
                      ELSE 0 END)`,
         'winsCount',
       )
       .addSelect(
-        `SUM(CASE WHEN game."firstPlayerId" = user.id AND game."scoreFirstPlayer" < game."scoreSecondPlayer" THEN 1
-                     WHEN game."secondPlayerId" = user.id AND game."scoreSecondPlayer" < game."scoreFirstPlayer" THEN 1
+        `SUM(CASE WHEN game."firstPlayerId" = user.id AND game.winner = CAST(game."secondPlayerId" AS TEXT) THEN 1
+                     WHEN game."secondPlayerId" = user.id AND game.winner = CAST(game."firstPlayerId" AS TEXT) THEN 1
                      ELSE 0 END)`,
         'lossesCount',
       )
       .addSelect(
-        `SUM(CASE WHEN game."firstPlayerId" = user.id AND game."scoreFirstPlayer" = game."scoreSecondPlayer" THEN 1
-        WHEN game."secondPlayerId" = user.id AND game."scoreFirstPlayer" = game."scoreSecondPlayer" THEN 1
+        `SUM(CASE WHEN game."firstPlayerId" = user.id AND game."winner" = 'draw' THEN 1
+        WHEN game."secondPlayerId" = user.id AND game."winner" = 'draw' THEN 1
         ELSE 0 END)`,
         'drawsCount',
       )

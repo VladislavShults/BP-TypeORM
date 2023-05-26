@@ -1,10 +1,13 @@
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsArray, IsNumber, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { toNumber } from '../../../blogs/helpers/cast.helper';
+import { toArray, toNumber } from '../../../blogs/helpers/cast.helper';
 
 export class QueryStatisticDTO {
-  @IsNotEmpty()
-  sort = ['avgScores desc', 'sumScore desc'];
+  @Transform(({ value }) =>
+    toArray(value, { default: ['avgScores desc', 'sumScore desc'] }),
+  )
+  @IsArray()
+  public sort = ['avgScores desc', 'sumScore desc'];
 
   @Transform(({ value }) => toNumber(value, { default: 1, min: 1 }))
   @IsNumber()
