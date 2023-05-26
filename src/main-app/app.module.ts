@@ -1,7 +1,6 @@
 import { UsersModule } from '../features/SA-API/users/module/users.module';
 import { Module } from '@nestjs/common';
 import * as dotenv from 'dotenv';
-dotenv.config();
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BlogsPlatformModule } from '../infrastructure/modules/blogsPlatformModule';
@@ -11,6 +10,8 @@ import { User } from '../features/SA-API/users/entities/user.entity';
 import { CqrsModule } from '@nestjs/cqrs';
 import { QuizGame } from '../features/public-API/quiz-game/entities/quiz-game.entity';
 import { Answer } from '../features/public-API/quiz-game/entities/quiz-game-answers.entity';
+
+dotenv.config();
 
 let urlSQL: string;
 if (process.env.dev === 'local1') {
