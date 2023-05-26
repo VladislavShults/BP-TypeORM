@@ -64,7 +64,6 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
         );
 
         await queryRunner.commitTransaction();
-
         return pair.id;
       }
     } catch (err) {
