@@ -187,8 +187,8 @@ export class QuizQueryRepository {
         'winsCount',
       )
       .addSelect(
-        `SUM(CASE WHEN game."firstPlayerId" = :userId AND game.winner = CAST(game."secondPlayerId" AS CHAR) THEN 1
-                     WHEN game."secondPlayerId" = :userId AND game.winner = CAST(game."firstPlayerId" AS CHAR) THEN 1
+        `SUM(CASE WHEN game."firstPlayerId" = :userId AND game.winner = CAST(game."secondPlayerId" AS TEXT) THEN 1
+                     WHEN game."secondPlayerId" = :userId AND game.winner = CAST(game."firstPlayerId" AS TEXT) THEN 1
                      ELSE 0 END)`,
         'lossesCount',
       )
