@@ -109,9 +109,9 @@ export class QuizGameRepository {
       manager
         .getRepository(QuizGame)
         .createQueryBuilder('game')
-        .setLock('pessimistic_write')
         // .leftJoinAndSelect('game.answers', 'answers')
         // .leftJoinAndSelect('game.questions', 'questions')
+        .setLock('pessimistic_write')
         .where({ firstPlayerId: userId, status: StatusGame.Active })
         .orWhere({ secondPlayerId: userId, status: StatusGame.Active })
         .getOne()
@@ -131,5 +131,26 @@ export class QuizGameRepository {
       relations: { questions: true },
     });
     return pairWithQuestions[0].questions;
+  }
+
+  async finishedGameAboutTenSec() {
+    const finishedDate = new Date(Date.now() - 10 * 1000);
+
+    await this.pairsRepo
+      .createQueryBuilder()
+      .update(QuizGame)
+      .set({
+        status: StatusGame.Finished,
+        finishGameDate: new Date(),
+        winner: () =>
+          `CASE WHEN "scoreFirstPlayer" > "scoreSecondPlayer" THEN CAST("firstPlayerId" AS TEXT)
+           WHEN "scoreFirstPlayer" < "scoreSecondPlayer" THEN CAST("secondPlayerId" AS TEXT) 
+           ELSE 'draw' END`,
+      })
+      .where('status = :status AND "lastResponseTimePlayers" < :finishDate', {
+        status: StatusGame.Active,
+        finishDate: finishedDate,
+      })
+      .execute();
   }
 }

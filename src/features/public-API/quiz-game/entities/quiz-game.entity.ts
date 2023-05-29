@@ -58,6 +58,9 @@ export class QuizGame {
 
   @Column({ nullable: true })
   winner: string;
+
+  @Column({ nullable: true })
+  lastResponseTimePlayers: Date;
 }
 
 export enum StatusGame {

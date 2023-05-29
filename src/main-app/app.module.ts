@@ -10,6 +10,7 @@ import { User } from '../features/SA-API/users/entities/user.entity';
 import { CqrsModule } from '@nestjs/cqrs';
 import { QuizGame } from '../features/public-API/quiz-game/entities/quiz-game.entity';
 import { Answer } from '../features/public-API/quiz-game/entities/quiz-game-answers.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ if (process.env.dev === 'local1') {
       ssl: true,
       entities: [User, QuizGame, Answer],
     }),
+    ScheduleModule.forRoot(),
     UsersModule,
     DeviceSessionModule,
   ],

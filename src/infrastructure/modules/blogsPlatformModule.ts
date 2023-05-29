@@ -68,6 +68,7 @@ import { QuizGameHttpModule } from '../../features/public-API/quiz-game/module/q
 import { GiveAnAnswerUseCase } from '../../features/public-API/quiz-game/application/use-cases/give-an-answer.use-case';
 import { AnswerModule } from '../../features/public-API/quiz-game/module/answer.module';
 import { AnswerHttpModule } from '../../features/public-API/quiz-game/module/answer-http.module';
+import { FinishedGameAboutTenSecUseCase } from '../../features/public-API/quiz-game/application/use-cases/finished-game-about-ten-sec.use-case';
 
 export const CommandHandler = [
   CreateQuestionUseCase,
@@ -76,6 +77,7 @@ export const CommandHandler = [
   UpdatePublishedQuestionByIdUseCase,
   ConnectionUseCase,
   GiveAnAnswerUseCase,
+  FinishedGameAboutTenSecUseCase,
 ];
 
 @Module({

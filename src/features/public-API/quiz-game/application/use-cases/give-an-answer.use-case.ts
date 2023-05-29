@@ -85,6 +85,7 @@ export class GiveAnAnswerUseCase
         : AnswerStatus.Incorrect;
 
       activeGame.answers.push(newAnswer);
+      answersAboutUser.push(newAnswer);
 
       const answer: AnswersViewModel = {
         questionId: newAnswer.questionId,
@@ -92,31 +93,19 @@ export class GiveAnAnswerUseCase
         addedAt: newAnswer.addedAt,
       };
 
+      if (answersAboutUser.length === 5) {
+        activeGame.lastResponseTimePlayers = new Date();
+      }
+      if (
+        answersAboutUser.length === 5 &&
+        answersAboutUser.find((a) => a.answerStatus === AnswerStatus.Correct)
+      ) {
+        activeGame.firstPlayerId == command.userId
+          ? (activeGame.scoreFirstPlayer += 1)
+          : (activeGame.scoreSecondPlayer += 1);
+      }
+
       if (activeGame.answers.length === 10) {
-        // Пользователь давший последний ответ
-        const userIdPlayerGaveLastAnswer = command.userId;
-
-        //Проверка наличия корректного ответа у пользователя первым ответившим на вопросы
-        const correctAnswersFirstResponder = activeGame.answers.filter(
-          (g) =>
-            g.answerStatus === AnswerStatus.Correct &&
-            g.userId != userIdPlayerGaveLastAnswer,
-        );
-
-        if (
-          correctAnswersFirstResponder.length !== 0 &&
-          activeGame.firstPlayerId != userIdPlayerGaveLastAnswer
-        ) {
-          activeGame.scoreFirstPlayer += 1;
-        }
-
-        if (
-          correctAnswersFirstResponder.length !== 0 &&
-          activeGame.firstPlayerId == userIdPlayerGaveLastAnswer
-        ) {
-          activeGame.scoreSecondPlayer += 1;
-        }
-
         activeGame.finishGameDate = new Date();
         activeGame.status = StatusGame.Finished;
 

@@ -38,6 +38,7 @@ export class ConnectionUseCase implements ICommandHandler<ConnectionCommand> {
         newPair.questions = null;
         newPair.scoreFirstPlayer = 0;
         newPair.scoreSecondPlayer = 0;
+        newPair.lastResponseTimePlayers = null;
 
         const newGame = await this.quizGameRepository.saveInTransaction(
           newPair,
