@@ -254,7 +254,6 @@ export class QuizQueryRepository {
       )
       .addSelect('user.id', 'id')
       .addSelect('user.login', 'login')
-      .addSelect('COUNT(user.id)', 'totalCount')
       .innerJoin(
         User,
         'user',
@@ -276,7 +275,14 @@ export class QuizQueryRepository {
 
     const items = results.map((r) => mapDBStatisticWithUserToViewStatistic(r));
 
-    const totalCount = Number(results[0].totalCount);
+    const totalCount = await this.usersRepo
+      .createQueryBuilder('u')
+      .innerJoin(
+        QuizGame,
+        'game',
+        'game."firstPlayerId" = u.id OR game."secondPlayerId" = u.id',
+      )
+      .getCount();
 
     return {
       pagesCount: Math.ceil(totalCount / pageSize),
