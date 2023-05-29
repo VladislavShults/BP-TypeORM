@@ -122,8 +122,10 @@ export class GiveAnAnswerUseCase
 
         if (activeGame.scoreFirstPlayer > activeGame.scoreSecondPlayer)
           activeGame.winner = activeGame.firstPlayerId;
+
         if (activeGame.scoreFirstPlayer < activeGame.scoreSecondPlayer)
           activeGame.winner = activeGame.secondPlayerId;
+
         if (activeGame.scoreFirstPlayer === activeGame.scoreSecondPlayer)
           activeGame.winner = 'draw';
       }

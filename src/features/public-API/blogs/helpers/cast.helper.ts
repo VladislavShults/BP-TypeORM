@@ -34,6 +34,7 @@ export function toArray(
   let newValue: string[];
 
   if (typeof value === 'string') newValue = [value];
+  else newValue = value;
 
   if (value === undefined) {
     newValue = opts.default;
