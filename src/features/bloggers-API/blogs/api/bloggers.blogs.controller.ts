@@ -2,16 +2,22 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
   HttpCode,
   HttpStatus,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   Put,
   Query,
   Request,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { URIParamBlogDto } from '../../../public-API/blogs/api/models/URIParam-blog.dto';
 import { JwtAuthGuard } from '../../../public-API/auth/guards/JWT-auth.guard';
 import { CheckBlogInDBAndBlogOwnerGuard } from '../guards/checkBlogOwner.guard';
@@ -136,5 +142,22 @@ export class BloggersBlogsController {
       query,
       userId,
     );
+  }
+
+  @Post(':blogId/images/wallpaper')
+  @UseGuards(JwtAuthGuard, CheckBlogInDBAndBlogOwnerGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 100 * 1024 }),
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    console.log(file);
   }
 }

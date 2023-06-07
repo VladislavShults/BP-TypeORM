@@ -11,6 +11,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { QuizGame } from '../features/public-API/quiz-game/entities/quiz-game.entity';
 import { Answer } from '../features/public-API/quiz-game/entities/quiz-game-answers.entity';
 import { ScheduleModule } from '@nestjs/schedule';
+import { HttpExceptionFilter } from '../exception.filter';
+import { APP_FILTER } from '@nestjs/core';
 
 dotenv.config();
 
@@ -41,6 +43,9 @@ if (process.env.dev === 'local1') {
     DeviceSessionModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
+  ],
 })
 export class AppModule {}
