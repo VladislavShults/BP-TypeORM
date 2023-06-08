@@ -43,7 +43,7 @@ export class AdminBlogsController {
     @Param() params: URIParamBlogDto,
     @Body() inputModel: BanBlogDto,
   ) {
-    const blog = await this.blogQueryRepository.findBlogById(
+    const blog = await this.blogQueryRepository.getBlogById(
       params.blogId,
       true,
     );

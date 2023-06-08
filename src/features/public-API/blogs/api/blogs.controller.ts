@@ -27,7 +27,7 @@ export class BlogsController {
 
   @Get(':blogId')
   async findBlogById(@Param() params: URIParamBlogDto): Promise<ViewBlogType> {
-    const blog = await this.blogsQueryRepository.findBlogById(params.blogId);
+    const blog = await this.blogsQueryRepository.getBlogById(params.blogId);
     if (!blog) throw new HttpException('Blog not found', HttpStatus.NOT_FOUND);
     return blog;
   }

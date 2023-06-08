@@ -3,9 +3,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../../SA-API/users/entities/user.entity';
+import { Wallpaper } from './wallpaper.entity';
 
 @Entity()
 export class Blog {
@@ -42,4 +44,7 @@ export class Blog {
 
   @Column()
   userId: string;
+
+  @OneToOne(() => Wallpaper, (w) => w.blogId)
+  wallpaper: Wallpaper;
 }

@@ -39,6 +39,9 @@ import { CommentsQueryRepository } from '../../../public-API/comments/api/commen
 import { ViewAllCommentsForAllPostsWithPaginationType } from '../../../public-API/comments/types/comments.types';
 import { QueryCommentDto } from '../../../public-API/comments/api/models/query-comment.dto';
 import { BlogsQueryRepository } from '../../../public-API/blogs/api/blogs.query.repository';
+import { UploadService } from '../../../public-API/upload/application/upload.service';
+import { CommandBus } from '@nestjs/cqrs';
+import { UploadFileAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload - file-and-save-info-in-db';
 
 @Controller('blogger/blogs')
 export class BloggersBlogsController {
@@ -48,6 +51,8 @@ export class BloggersBlogsController {
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
+    private readonly uploadService: UploadService,
+    private readonly commandCommandBus: CommandBus,
   ) {}
   @Delete(':blogId')
   @HttpCode(204)
@@ -78,7 +83,7 @@ export class BloggersBlogsController {
     const user: UserDBType = req.user;
 
     const newBlogId = await this.blogsService.createBlog(createBlogDTO, user);
-    return await this.blogsQueryRepository.findBlogById(newBlogId);
+    return await this.blogsQueryRepository.getBlogById(newBlogId);
   }
 
   @Get()
@@ -148,16 +153,27 @@ export class BloggersBlogsController {
   @UseGuards(JwtAuthGuard, CheckBlogInDBAndBlogOwnerGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
+    @Request() req,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 100 * 1024 }),
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)$/ }),
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
         ],
       }),
     )
     file: Express.Multer.File,
   ) {
-    console.log(file);
+    const blogId: string = req.params.blogId;
+
+    await this.commandCommandBus.execute(
+      new UploadFileAndSaveInfoInDbCommand(
+        file.originalname,
+        file.buffer,
+        blogId,
+      ),
+    );
+
+    return this.blogsQueryRepository.getBlogById(blogId);
   }
 }

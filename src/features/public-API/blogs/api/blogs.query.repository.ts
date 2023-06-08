@@ -26,7 +26,7 @@ export class BlogsQueryRepository {
     private bannedUsersForBlogRepo: Repository<BannedUsersForBlog>,
   ) {}
 
-  async findBlogById(
+  async getBlogById(
     blogId: string,
     isBanned?: boolean,
   ): Promise<ViewBlogType | null> {

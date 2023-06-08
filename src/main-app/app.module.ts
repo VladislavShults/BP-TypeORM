@@ -13,6 +13,9 @@ import { Answer } from '../features/public-API/quiz-game/entities/quiz-game-answ
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpExceptionFilter } from '../exception.filter';
 import { APP_FILTER } from '@nestjs/core';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+import { Wallpaper } from '../features/public-API/blogs/entities/wallpaper.entity';
 
 dotenv.config();
 
@@ -36,11 +39,14 @@ if (process.env.dev === 'local1') {
       autoLoadEntities: true,
       synchronize: true,
       ssl: true,
-      entities: [User, QuizGame, Answer],
+      entities: [User, QuizGame, Answer, Wallpaper],
     }),
     ScheduleModule.forRoot(),
     UsersModule,
     DeviceSessionModule,
+    MulterModule.register({
+      storage: memoryStorage(),
+    }),
   ],
   controllers: [AppController],
   providers: [
