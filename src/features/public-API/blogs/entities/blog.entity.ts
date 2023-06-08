@@ -45,6 +45,6 @@ export class Blog {
   @Column()
   userId: string;
 
-  @OneToOne(() => Wallpaper, (w) => w.blogId)
-  wallpaper: Wallpaper;
+  @OneToOne(() => Wallpaper, (w) => w.blog)
+  wallpapers: Wallpaper;
 }

@@ -40,6 +40,7 @@ if (process.env.dev === 'local1') {
       synchronize: true,
       ssl: true,
       entities: [User, QuizGame, Answer, Wallpaper],
+      // logging: true,
     }),
     ScheduleModule.forRoot(),
     UsersModule,

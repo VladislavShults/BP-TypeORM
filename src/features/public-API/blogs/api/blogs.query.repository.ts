@@ -163,13 +163,14 @@ export class BlogsQueryRepository {
 
   private async getBlogByIdDBType(blogId: string, isBanned?: boolean) {
     let stringWhere =
-      'id = :blogId AND "isDeleted" = false AND "isBanned" = false';
+      'b.id = :blogId AND b."isDeleted" = false AND b."isBanned" = false';
     if (isBanned) {
-      stringWhere = 'id = :blogId AND "isDeleted" = false';
+      stringWhere = 'b.id = :blogId AND b."isDeleted" = false';
     }
     try {
       const blog = await this.blogsRepo
-        .createQueryBuilder()
+        .createQueryBuilder('b')
+        .leftJoinAndSelect('b.wallpapers', 'wallpaper')
         .where(stringWhere, { blogId })
         .getOne();
 

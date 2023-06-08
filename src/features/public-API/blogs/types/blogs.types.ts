@@ -46,6 +46,7 @@ export type ViewBlogByIdType = {
   websiteUrl: string;
   createdAt: Date;
   isMembership: boolean;
+  images: WallpaperAndMainViewType;
 };
 
 export type ViewBlogsTypeWithPagination = {
@@ -62,4 +63,26 @@ export type ViewBannedUsersForBlogWithPaginationType = {
   pageSize: number;
   totalCount: number;
   items: BannedUsersForBlogViewType[];
+};
+
+export type ImageType = {
+  url: string;
+  width: number;
+  height: number;
+  fileSize: number;
+};
+
+export type ImageDBType = {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  fileSize: number;
+  createdAt: Date;
+  blogId: number;
+};
+
+export type WallpaperAndMainViewType = {
+  wallpaper: ImageType | null;
+  main: ImageType | null;
 };

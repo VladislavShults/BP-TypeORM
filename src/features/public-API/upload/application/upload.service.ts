@@ -7,11 +7,11 @@ export class UploadService {
   constructor() {
     this.s3 = new S3Client({
       credentials: {
-        accessKeyId: 'YCAJES2-iK2fGC-Nsrz-w1Ver',
-        secretAccessKey: 'YCMZwT7Y5Nm-CqUZQpF-7vtS6uFkUhQE0gz0CQid',
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY,
       },
-      region: 'ru-central1',
-      endpoint: 'https://storage.yandexcloud.net',
+      region: process.env.S3_REGION,
+      endpoint: process.env.BASE_URL,
     });
   }
 
@@ -20,7 +20,7 @@ export class UploadService {
 
     const output = await this.s3.send(
       new PutObjectCommand({
-        Bucket: 'shvs1510',
+        Bucket: process.env.BACKET_NAME,
         Key: key,
         Body: buffer,
       }),

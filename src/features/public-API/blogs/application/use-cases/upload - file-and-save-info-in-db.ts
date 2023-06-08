@@ -43,7 +43,7 @@ export class UploadFileAndSaveInfoInDbUseCase
         newWallpaper.width = width;
         newWallpaper.height = height;
         newWallpaper.fileSize = fileSize;
-        newWallpaper.blogId = command.blogId;
+        newWallpaper.blogId = Number(command.blogId);
         newWallpaper.createdAt = new Date();
 
         await transactionalEntityManager.save(newWallpaper);
