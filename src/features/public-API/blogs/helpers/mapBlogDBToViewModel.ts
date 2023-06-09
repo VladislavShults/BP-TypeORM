@@ -1,6 +1,13 @@
-import { BlogDBType, ViewBlogType } from '../types/blogs.types';
+import {
+  BlogDBType,
+  ImageDBType,
+  ImageViewType,
+  ViewBlogType,
+} from '../types/blogs.types';
 
-export const mapBlog = (blog: BlogDBType): ViewBlogType => ({
+export const mapBlog = (
+  blog: BlogDBType & { wallpapers: ImageViewType; main: ImageDBType },
+): ViewBlogType => ({
   id: blog.id.toString(),
   name: blog.blogName,
   description: blog.description,

@@ -3,10 +3,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../../SA-API/users/entities/user.entity';
 import { Blog } from '../../blogs/entities/blog.entity';
+import { PostMainImage } from './post-main-image.entity';
 
 @Entity()
 export class Post {
@@ -47,4 +49,7 @@ export class Post {
 
   @Column({ type: 'jsonb' })
   newestLikes: object[];
+
+  @OneToOne(() => PostMainImage, (p) => p.post)
+  main: PostMainImage;
 }

@@ -6,7 +6,6 @@ import {
   ViewBlogType,
   WallpaperAndMainViewType,
 } from '../types/blogs.types';
-import { mapBlog } from '../helpers/mapBlogDBToViewModel';
 import {
   mapBlogById,
   mapBlogByIdWithUserId,
@@ -57,7 +56,7 @@ export class BlogsQueryRepository {
       sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
     let stringWhere =
-      '"isBanned" = false AND "isDeleted" = false AND LOWER("blogName") like :searchName';
+      'b."isBanned" = false AND b."isDeleted" = false AND LOWER(b."blogName") like :searchName';
 
     let params: { searchName: string; userId?: string } = {
       searchName: '%' + searchNameTerm.toLocaleLowerCase() + '%',
@@ -65,7 +64,7 @@ export class BlogsQueryRepository {
 
     if (userId) {
       stringWhere =
-        '"isBanned" = false AND "isDeleted" = false AND LOWER("blogName") like :searchName AND "userId" = :userId';
+        'b."isBanned" = false AND b."isDeleted" = false AND LOWER(b."blogName") like :searchName AND b."userId" = :userId';
       params = {
         searchName: '%' + searchNameTerm.toLocaleLowerCase() + '%',
         userId,
@@ -74,13 +73,15 @@ export class BlogsQueryRepository {
 
     const itemsDB = await this.blogsRepo
       .createQueryBuilder('b')
+      .leftJoinAndSelect('b.wallpapers', 'wallpaper')
+      .leftJoinAndSelect('b.main', 'main')
       .where(stringWhere, params)
       .limit(pageSize)
-      .orderBy('"' + sortBy + '"', sortDirection)
+      .orderBy('b."' + sortBy + '"', sortDirection)
       .offset((pageNumber - 1) * pageSize)
       .getManyAndCount();
 
-    const items = itemsDB[0].map((i) => mapBlog(i));
+    const items = itemsDB[0].map((i) => mapBlogById(i));
 
     const totalCount = itemsDB[1];
 

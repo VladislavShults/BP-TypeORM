@@ -2,26 +2,27 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DataSource } from 'typeorm';
 import { S3Adapter } from '../../../upload/application/s3-adapter';
 import sharp from 'sharp';
-import { BlogMainImage } from '../../entities/main-image.entity';
+import { PostMainImage } from '../../entities/post-main-image.entity';
 
-export class UploadMainImageAndSaveInfoInDbCommand {
+export class UploadPostMainImageAndSaveInfoInDbCommand {
   constructor(
     public filename: string,
     public buffer: Buffer,
-    public blogId: string,
+    public postId: number,
   ) {}
 }
-
-@CommandHandler(UploadMainImageAndSaveInfoInDbCommand)
-export class UploadMainImageAndSaveInfoInDbUseCase
-  implements ICommandHandler<UploadMainImageAndSaveInfoInDbCommand>
+@CommandHandler(UploadPostMainImageAndSaveInfoInDbCommand)
+export class UploadPostMainImageAndSaveInfoInDbUseCase
+  implements ICommandHandler<UploadPostMainImageAndSaveInfoInDbCommand>
 {
   constructor(
     private myDataSource: DataSource,
     private uploadService: S3Adapter,
   ) {}
 
-  async execute(command: UploadMainImageAndSaveInfoInDbCommand): Promise<any> {
+  async execute(
+    command: UploadPostMainImageAndSaveInfoInDbCommand,
+  ): Promise<any> {
     await this.myDataSource.manager.transaction(
       async (transactionalEntityManager) => {
         const metadata = await sharp(command.buffer).metadata();
@@ -30,23 +31,23 @@ export class UploadMainImageAndSaveInfoInDbUseCase
         const width = metadata.width;
         const fileSize = command.buffer.length;
 
-        const folder = 'blogs/mainImage';
+        const folder = 'posts/mainImage';
 
         const saveAndGetInfoAboutImage = await this.uploadService.uploadImage(
           command.filename,
           command.buffer,
-          Number(command.blogId),
+          command.postId,
           folder,
         );
 
-        const newMainImage = new BlogMainImage();
+        const newMainImage = new PostMainImage();
 
         newMainImage.id = saveAndGetInfoAboutImage.id.slice(1, -1);
         newMainImage.url = saveAndGetInfoAboutImage.url;
         newMainImage.width = width;
         newMainImage.height = height;
         newMainImage.fileSize = fileSize;
-        newMainImage.blogId = Number(command.blogId);
+        newMainImage.postId = Number(command.postId);
         newMainImage.createdAt = new Date();
 
         await transactionalEntityManager.save(newMainImage);

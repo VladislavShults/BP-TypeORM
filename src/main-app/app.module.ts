@@ -16,7 +16,8 @@ import { APP_FILTER } from '@nestjs/core';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { Wallpaper } from '../features/public-API/blogs/entities/wallpaper.entity';
-import { MainImage } from '../features/public-API/blogs/entities/main-image.entity';
+import { BlogMainImage } from '../features/public-API/blogs/entities/main-image.entity';
+import { PostMainImage } from '../features/public-API/posts/entities/post-main-image.entity';
 
 dotenv.config();
 
@@ -40,7 +41,14 @@ if (process.env.dev === 'local1') {
       autoLoadEntities: true,
       synchronize: true,
       ssl: true,
-      entities: [User, QuizGame, Answer, Wallpaper, MainImage],
+      entities: [
+        User,
+        QuizGame,
+        Answer,
+        Wallpaper,
+        BlogMainImage,
+        PostMainImage,
+      ],
       // logging: true,
     }),
     ScheduleModule.forRoot(),

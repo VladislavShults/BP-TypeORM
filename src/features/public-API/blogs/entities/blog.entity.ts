@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../../../SA-API/users/entities/user.entity';
 import { Wallpaper } from './wallpaper.entity';
-import { MainImage } from './main-image.entity';
+import { BlogMainImage } from './main-image.entity';
 
 @Entity()
 export class Blog {
@@ -49,6 +49,6 @@ export class Blog {
   @OneToOne(() => Wallpaper, (w) => w.blog)
   wallpapers: Wallpaper;
 
-  @OneToOne(() => MainImage, (m) => m.blog)
-  main: MainImage;
+  @OneToOne(() => BlogMainImage, (m) => m.blog)
+  main: BlogMainImage;
 }

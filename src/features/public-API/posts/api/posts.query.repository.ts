@@ -8,6 +8,8 @@ import { QueryGetPostsByBlogIdDto } from '../../blogs/api/models/query-getPostsB
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Post } from '../entities/post.entity';
+import { PostMainImage } from '../entities/post-main-image.entity';
+import { mapPostMainImageDbToView } from '../helpers/map-post-main-image-db-to-view';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -172,5 +174,23 @@ export class PostsQueryRepository {
       totalCount: Number(totalCount[0].count),
       items,
     };
+  }
+
+  async getPostByIdWithUserId(postId: string): Promise<Post> {
+    const post = await this.dataSource
+      .getRepository(Post)
+      .find({ where: { id: postId } });
+
+    return post[0];
+  }
+
+  async getMainImageForPost(postId: number) {
+    const postInfo = await this.dataSource
+      .getRepository(PostMainImage)
+      .find({ where: { postId: postId } });
+
+    const result = mapPostMainImageDbToView(postInfo[0]);
+
+    return result;
   }
 }

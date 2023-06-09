@@ -72,6 +72,7 @@ import { FinishedGameAboutTenSecUseCase } from '../../features/public-API/quiz-g
 import { S3Adapter } from '../../features/public-API/upload/application/s3-adapter';
 import { UploadWallpaperAndSaveInfoInDbUsecase } from '../../features/public-API/blogs/application/use-cases/upload - wallpaper-and-save-info-in-db.usecase';
 import { UploadMainImageAndSaveInfoInDbUseCase } from '../../features/public-API/blogs/application/use-cases/upload-main-image-and-save-in-db.usecase';
+import { UploadPostMainImageAndSaveInfoInDbUseCase } from '../../features/public-API/posts/application/use-cases/upload-post-main-image-and-save-in-db';
 
 export const CommandHandler = [
   CreateQuestionUseCase,
@@ -83,6 +84,7 @@ export const CommandHandler = [
   FinishedGameAboutTenSecUseCase,
   UploadWallpaperAndSaveInfoInDbUsecase,
   UploadMainImageAndSaveInfoInDbUseCase,
+  UploadPostMainImageAndSaveInfoInDbUseCase,
 ];
 
 @Module({

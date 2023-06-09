@@ -65,7 +65,7 @@ export type ViewBannedUsersForBlogWithPaginationType = {
   items: BannedUsersForBlogViewType[];
 };
 
-export type ImageType = {
+export type ImageViewType = {
   url: string;
   width: number;
   height: number;
@@ -83,6 +83,6 @@ export type ImageDBType = {
 };
 
 export type WallpaperAndMainViewType = {
-  wallpaper: ImageType | null;
-  main: ImageType | null;
+  wallpaper: ImageViewType | null;
+  main: ImageViewType | null;
 };

@@ -43,6 +43,8 @@ import { S3Adapter } from '../../../public-API/upload/application/s3-adapter';
 import { CommandBus } from '@nestjs/cqrs';
 import { UploadWallpaperImageAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload - wallpaper-and-save-info-in-db.usecase';
 import { UploadMainImageAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload-main-image-and-save-in-db.usecase';
+import { CheckPostInDBAndBlogOwnerGuard } from '../../../public-API/posts/guards/check-post-in-db-and-check-owner';
+import { UploadPostMainImageAndSaveInfoInDbCommand } from '../../../public-API/posts/application/use-cases/upload-post-main-image-and-save-in-db';
 
 @Controller('blogger/blogs')
 export class BloggersBlogsController {
@@ -204,5 +206,33 @@ export class BloggersBlogsController {
     );
 
     return this.blogsQueryRepository.getWallpaperAndMainImageForBlog(blogId);
+  }
+
+  @Post(':blogId/posts/:postId/images/main')
+  @UseGuards(JwtAuthGuard, CheckPostInDBAndBlogOwnerGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadPostMainImageFile(
+    @Request() req,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 100 * 1024 }),
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const postId = Number(req.params.postId);
+
+    await this.commandCommandBus.execute(
+      new UploadPostMainImageAndSaveInfoInDbCommand(
+        file.originalname,
+        file.buffer,
+        postId,
+      ),
+    );
+
+    return this.postsQueryRepository.getMainImageForPost(postId);
   }
 }

@@ -37,7 +37,7 @@ export class UploadWallpaperAndSaveInfoInDbUsecase
         const saveAndGetInfoAboutImage = await this.uploadService.uploadImage(
           command.filename,
           command.buffer,
-          command.blogId,
+          Number(command.blogId),
           folder,
         );
 

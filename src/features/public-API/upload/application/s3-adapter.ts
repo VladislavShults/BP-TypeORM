@@ -18,10 +18,10 @@ export class S3Adapter {
   async uploadImage(
     filename: string,
     buffer: Buffer,
-    blogId: string,
+    id: number,
     folder: string,
   ) {
-    const key = `${folder}/${blogId}/${filename}`;
+    const key = `${folder}/${id}/${filename}`;
 
     const output = await this.s3.send(
       new PutObjectCommand({
