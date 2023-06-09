@@ -2,7 +2,7 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class UploadService {
+export class S3Adapter {
   private s3: S3Client;
   constructor() {
     this.s3 = new S3Client({
@@ -15,8 +15,13 @@ export class UploadService {
     });
   }
 
-  async uploadImage(filename: string, buffer: Buffer, blogId: string) {
-    const key = `wallpapers/${blogId}/${filename}`;
+  async uploadImage(
+    filename: string,
+    buffer: Buffer,
+    blogId: string,
+    folder: string,
+  ) {
+    const key = `${folder}/${blogId}/${filename}`;
 
     const output = await this.s3.send(
       new PutObjectCommand({

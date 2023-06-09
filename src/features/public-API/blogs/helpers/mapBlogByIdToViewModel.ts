@@ -1,4 +1,5 @@
 import { ViewBlogByIdType } from '../types/blogs.types';
+import { baseUrl } from '../../../../shared/constants/constants';
 
 export const mapBlogById = (blog): ViewBlogByIdType => ({
   id: blog.id.toString(),
@@ -11,12 +12,7 @@ export const mapBlogById = (blog): ViewBlogByIdType => ({
     wallpaper: !blog.wallpapers
       ? null
       : {
-          url:
-            process.env.BASE_URL +
-            '/' +
-            process.env.BACKET_NAME +
-            '/' +
-            blog.wallpapers.url,
+          url: baseUrl + blog.wallpapers.url,
           width: blog.wallpapers.width,
           height: blog.wallpapers.height,
           fileSize: blog.wallpapers.fileSize,
@@ -24,7 +20,7 @@ export const mapBlogById = (blog): ViewBlogByIdType => ({
     main: !blog.main
       ? null
       : {
-          url: blog.main.url,
+          url: baseUrl + blog.wallpapers.url,
           width: blog.main.width,
           height: blog.main.height,
           fileSize: blog.main.fileSize,
@@ -46,7 +42,7 @@ export const mapBlogByIdWithUserId = (
     wallpaper: !blog.wallpapers
       ? null
       : {
-          url: blog.wallpapers.url,
+          url: baseUrl + blog.wallpapers.url,
           width: blog.wallpapers.width,
           height: blog.wallpapers.height,
           fileSize: blog.wallpapers.fileSize,
@@ -54,7 +50,7 @@ export const mapBlogByIdWithUserId = (
     main: !blog.main
       ? null
       : {
-          url: blog.main.url,
+          url: baseUrl + blog.wallpapers.url,
           width: blog.main.width,
           height: blog.main.height,
           fileSize: blog.main.fileSize,

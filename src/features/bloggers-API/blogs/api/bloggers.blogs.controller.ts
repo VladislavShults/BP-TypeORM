@@ -39,9 +39,10 @@ import { CommentsQueryRepository } from '../../../public-API/comments/api/commen
 import { ViewAllCommentsForAllPostsWithPaginationType } from '../../../public-API/comments/types/comments.types';
 import { QueryCommentDto } from '../../../public-API/comments/api/models/query-comment.dto';
 import { BlogsQueryRepository } from '../../../public-API/blogs/api/blogs.query.repository';
-import { UploadService } from '../../../public-API/upload/application/upload.service';
+import { S3Adapter } from '../../../public-API/upload/application/s3-adapter';
 import { CommandBus } from '@nestjs/cqrs';
-import { UploadFileAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload - file-and-save-info-in-db';
+import { UploadWallpaperImageAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload - wallpaper-and-save-info-in-db.usecase';
+import { UploadMainImageAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload-main-image-and-save-in-db.usecase';
 
 @Controller('blogger/blogs')
 export class BloggersBlogsController {
@@ -51,7 +52,7 @@ export class BloggersBlogsController {
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
-    private readonly uploadService: UploadService,
+    private readonly uploadService: S3Adapter,
     private readonly commandCommandBus: CommandBus,
   ) {}
   @Delete(':blogId')
@@ -152,7 +153,7 @@ export class BloggersBlogsController {
   @Post(':blogId/images/wallpaper')
   @UseGuards(JwtAuthGuard, CheckBlogInDBAndBlogOwnerGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
+  async uploadWallpaperFile(
     @Request() req,
     @UploadedFile(
       new ParseFilePipe({
@@ -167,13 +168,41 @@ export class BloggersBlogsController {
     const blogId: string = req.params.blogId;
 
     await this.commandCommandBus.execute(
-      new UploadFileAndSaveInfoInDbCommand(
+      new UploadWallpaperImageAndSaveInfoInDbCommand(
         file.originalname,
         file.buffer,
         blogId,
       ),
     );
 
-    return this.blogsQueryRepository.getBlogById(blogId);
+    return this.blogsQueryRepository.getWallpaperAndMainImageForBlog(blogId);
+  }
+
+  @Post(':blogId/images/main')
+  @UseGuards(JwtAuthGuard, CheckBlogInDBAndBlogOwnerGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMainImageFile(
+    @Request() req,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 100 * 1024 }),
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const blogId: string = req.params.blogId;
+
+    await this.commandCommandBus.execute(
+      new UploadMainImageAndSaveInfoInDbCommand(
+        file.originalname,
+        file.buffer,
+        blogId,
+      ),
+    );
+
+    return this.blogsQueryRepository.getWallpaperAndMainImageForBlog(blogId);
   }
 }

@@ -69,8 +69,9 @@ import { GiveAnAnswerUseCase } from '../../features/public-API/quiz-game/applica
 import { AnswerModule } from '../../features/public-API/quiz-game/module/answer.module';
 import { AnswerHttpModule } from '../../features/public-API/quiz-game/module/answer-http.module';
 import { FinishedGameAboutTenSecUseCase } from '../../features/public-API/quiz-game/application/use-cases/finished-game-about-ten-sec.use-case';
-import { UploadService } from '../../features/public-API/upload/application/upload.service';
-import { UploadFileAndSaveInfoInDbUseCase } from '../../features/public-API/blogs/application/use-cases/upload - file-and-save-info-in-db';
+import { S3Adapter } from '../../features/public-API/upload/application/s3-adapter';
+import { UploadWallpaperAndSaveInfoInDbUsecase } from '../../features/public-API/blogs/application/use-cases/upload - wallpaper-and-save-info-in-db.usecase';
+import { UploadMainImageAndSaveInfoInDbUseCase } from '../../features/public-API/blogs/application/use-cases/upload-main-image-and-save-in-db.usecase';
 
 export const CommandHandler = [
   CreateQuestionUseCase,
@@ -80,7 +81,8 @@ export const CommandHandler = [
   ConnectionUseCase,
   GiveAnAnswerUseCase,
   FinishedGameAboutTenSecUseCase,
-  UploadFileAndSaveInfoInDbUseCase,
+  UploadWallpaperAndSaveInfoInDbUsecase,
+  UploadMainImageAndSaveInfoInDbUseCase,
 ];
 
 @Module({
@@ -152,7 +154,7 @@ export const CommandHandler = [
     DevicesQueryRepository,
     QuizGameRepository,
     QuizQueryRepository,
-    UploadService,
+    S3Adapter,
     ...CommandHandler,
   ],
 })

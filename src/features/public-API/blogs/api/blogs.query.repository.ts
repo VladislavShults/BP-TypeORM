@@ -4,6 +4,7 @@ import {
   ViewBannedUsersForBlogWithPaginationType,
   ViewBlogsTypeWithPagination,
   ViewBlogType,
+  WallpaperAndMainViewType,
 } from '../types/blogs.types';
 import { mapBlog } from '../helpers/mapBlogDBToViewModel';
 import {
@@ -16,6 +17,7 @@ import { DataSource, Repository } from 'typeorm';
 import { QueryBlogDto } from './models/query-blog.dto';
 import { Blog } from '../entities/blog.entity';
 import { BannedUsersForBlog } from '../../../bloggers-API/users/entities/bannedUsersForBlog.entity';
+import { mapBlogWithWallpaperAndMainToWallpaperAndMain } from '../helpers/mapBlogWithWallpaperAndMainToWallaperAndMain';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -171,6 +173,7 @@ export class BlogsQueryRepository {
       const blog = await this.blogsRepo
         .createQueryBuilder('b')
         .leftJoinAndSelect('b.wallpapers', 'wallpaper')
+        .leftJoinAndSelect('b.main', 'main')
         .where(stringWhere, { blogId })
         .getOne();
 
@@ -182,5 +185,15 @@ export class BlogsQueryRepository {
 
   async getBanAndUnbanBlogById(blogId: string) {
     return await this.getBlogByIdDBType(blogId, true);
+  }
+
+  async getWallpaperAndMainImageForBlog(
+    blogId: string,
+  ): Promise<WallpaperAndMainViewType> {
+    const wallpapersAndMainImageDb = await this.getBlogByIdDBType(blogId);
+
+    return mapBlogWithWallpaperAndMainToWallpaperAndMain(
+      wallpapersAndMainImageDb,
+    );
   }
 }

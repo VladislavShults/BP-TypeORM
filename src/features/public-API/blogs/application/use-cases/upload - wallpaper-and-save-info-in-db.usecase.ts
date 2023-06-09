@@ -1,10 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DataSource } from 'typeorm';
-import { UploadService } from '../../../upload/application/upload.service';
+import { S3Adapter } from '../../../upload/application/s3-adapter';
 import sharp from 'sharp';
 import { Wallpaper } from '../../entities/wallpaper.entity';
 
-export class UploadFileAndSaveInfoInDbCommand {
+export class UploadWallpaperImageAndSaveInfoInDbCommand {
   constructor(
     public filename: string,
     public buffer: Buffer,
@@ -12,16 +12,18 @@ export class UploadFileAndSaveInfoInDbCommand {
   ) {}
 }
 
-@CommandHandler(UploadFileAndSaveInfoInDbCommand)
-export class UploadFileAndSaveInfoInDbUseCase
-  implements ICommandHandler<UploadFileAndSaveInfoInDbCommand>
+@CommandHandler(UploadWallpaperImageAndSaveInfoInDbCommand)
+export class UploadWallpaperAndSaveInfoInDbUsecase
+  implements ICommandHandler<UploadWallpaperImageAndSaveInfoInDbCommand>
 {
   constructor(
     private myDataSource: DataSource,
-    private uploadService: UploadService,
+    private uploadService: S3Adapter,
   ) {}
 
-  async execute(command: UploadFileAndSaveInfoInDbCommand): Promise<any> {
+  async execute(
+    command: UploadWallpaperImageAndSaveInfoInDbCommand,
+  ): Promise<any> {
     await this.myDataSource.manager.transaction(
       async (transactionalEntityManager) => {
         const metadata = await sharp(command.buffer).metadata();
@@ -30,10 +32,13 @@ export class UploadFileAndSaveInfoInDbUseCase
         const width = metadata.width;
         const fileSize = command.buffer.length;
 
+        const folder = 'blogs/wallpapers';
+
         const saveAndGetInfoAboutImage = await this.uploadService.uploadImage(
           command.filename,
           command.buffer,
           command.blogId,
+          folder,
         );
 
         const newWallpaper = new Wallpaper();
