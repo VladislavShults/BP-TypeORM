@@ -21,6 +21,15 @@ export const mapPost = (post): ViewPostType => {
       myStatus: post.myStatus || 'None',
       newestLikes,
     },
+    images: {
+      main: [
+        {
+          url: post.url,
+          width: post.width,
+          height: post.height,
+          fileSize: post.fileSize,
+        },
+      ],
+    },
   };
 };
-

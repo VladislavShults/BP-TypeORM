@@ -3,12 +3,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../../SA-API/users/entities/user.entity';
 import { Blog } from '../../blogs/entities/blog.entity';
 import { PostMainImage } from './post-main-image.entity';
+import { PostsLikesOrDislike } from '../../likes/entities/postsLikesOrDislike.entity';
 
 @Entity()
 export class Post {
@@ -40,7 +42,7 @@ export class Post {
   @Column()
   userId: string;
 
-  @ManyToOne(() => Blog)
+  @ManyToOne(() => Blog, (b) => b.post)
   @JoinColumn({ name: 'blogId' })
   blog: Blog;
 
@@ -52,4 +54,11 @@ export class Post {
 
   @OneToOne(() => PostMainImage, (p) => p.post)
   main: PostMainImage;
+
+  @OneToMany(() => PostsLikesOrDislike, (p) => p.post)
+  postLikeOrDislike: PostsLikesOrDislike[];
+
+  likesCount: string;
+
+  dislikesCount: string;
 }

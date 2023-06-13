@@ -3,12 +3,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../../SA-API/users/entities/user.entity';
 import { Wallpaper } from './wallpaper.entity';
 import { BlogMainImage } from './main-image.entity';
+import { Post } from '../../posts/entities/post.entity';
 
 @Entity()
 export class Blog {
@@ -51,4 +53,7 @@ export class Blog {
 
   @OneToOne(() => BlogMainImage, (m) => m.blog)
   main: BlogMainImage;
+
+  @OneToMany(() => Post, (p) => p.blog)
+  post: Post;
 }

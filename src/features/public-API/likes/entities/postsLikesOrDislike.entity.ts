@@ -26,7 +26,7 @@ export class PostsLikesOrDislike {
   @Column()
   userId: string;
 
-  @ManyToOne(() => Post)
+  @ManyToOne(() => Post, (p) => p.postLikeOrDislike)
   @JoinColumn({ name: 'postId' })
   post: Post;
 

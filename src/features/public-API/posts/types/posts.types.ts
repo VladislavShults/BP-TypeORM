@@ -1,3 +1,5 @@
+import { ImageViewType } from '../../blogs/types/blogs.types';
+
 export type PostDBType = {
   id: number;
   title: string;
@@ -33,6 +35,7 @@ export type ViewPostType = {
   blogName: string;
   createdAt: Date;
   extendedLikesInfo: ExtendedLikesInfoType;
+  images: { main: ImageViewType[] };
 };
 
 export type ViewPostWithoutLikesType = Omit<ViewPostType, 'extendedLikesInfo'>;
