@@ -18,13 +18,15 @@ export const mapBlogById = (blog): ViewBlogByIdType => ({
           fileSize: blog.wallpapers.fileSize,
         },
     main: !blog.main
-      ? null
-      : {
-          url: baseUrl + blog.wallpapers.url,
-          width: blog.main.width,
-          height: blog.main.height,
-          fileSize: blog.main.fileSize,
-        },
+      ? []
+      : [
+          {
+            url: baseUrl + blog.wallpapers.url,
+            width: blog.main.width,
+            height: blog.main.height,
+            fileSize: blog.main.fileSize,
+          },
+        ],
   },
 });
 
@@ -48,12 +50,14 @@ export const mapBlogByIdWithUserId = (
           fileSize: blog.wallpapers.fileSize,
         },
     main: !blog.main
-      ? null
-      : {
-          url: baseUrl + blog.wallpapers.url,
-          width: blog.main.width,
-          height: blog.main.height,
-          fileSize: blog.main.fileSize,
-        },
+      ? []
+      : [
+          {
+            url: baseUrl + blog.wallpapers.url,
+            width: blog.main.width,
+            height: blog.main.height,
+            fileSize: blog.main.fileSize,
+          },
+        ],
   },
 });

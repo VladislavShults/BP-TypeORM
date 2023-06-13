@@ -84,5 +84,5 @@ export type ImageDBType = {
 
 export type WallpaperAndMainViewType = {
   wallpaper: ImageViewType | null;
-  main: ImageViewType | null;
+  main: ImageViewType[];
 };

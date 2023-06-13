@@ -12,6 +12,9 @@ export class TestingController {
       `DELETE FROM public."quiz_game_questions_quiz_game_question"`,
     );
     await this.dataSource.query(`DELETE FROM public."quiz_game_question"`);
+    await this.dataSource.query(`DELETE FROM public."postMainImages"`);
+    await this.dataSource.query(`DELETE FROM public."blogMainImages"`);
+    await this.dataSource.query(`DELETE FROM public."wallpapers"`);
     await this.dataSource.query(`DELETE FROM public."answers"`);
     await this.dataSource.query(`DELETE FROM public."quiz_game"`);
     await this.dataSource.query(`DELETE FROM public."ban_info"`);

@@ -17,11 +17,13 @@ export const mapBlogWithWallpaperAndMainToWallpaperAndMain = (
         fileSize: blog.wallpapers.fileSize,
       },
   main: !blog.main
-    ? null
-    : {
-        url: baseUrl + blog.main.url,
-        width: blog.main.width,
-        height: blog.main.height,
-        fileSize: blog.main.fileSize,
-      },
+    ? []
+    : [
+        {
+          url: baseUrl + blog.main.url,
+          width: blog.main.width,
+          height: blog.main.height,
+          fileSize: blog.main.fileSize,
+        },
+      ],
 });
