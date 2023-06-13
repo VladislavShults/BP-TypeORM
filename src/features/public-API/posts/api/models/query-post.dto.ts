@@ -1,6 +1,3 @@
-export class QueryPostDto {
-  pageNumber: string;
-  pageSize: string;
-  sortBy: string;
-  sortDirection: 'desc' | 'asc';
-}
+import { QueryGetPostsByBlogIdDto } from '../../../blogs/api/models/query-getPostsByBlogId.dto';
+
+export class QueryPostDto extends QueryGetPostsByBlogIdDto {}

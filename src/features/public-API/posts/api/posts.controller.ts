@@ -6,11 +6,11 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  Post,
   Put,
   Query,
-  UseGuards,
   Request,
-  Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ViewPostWithoutLikesType } from '../types/posts.types';
 import { PostsService } from '../application/posts.service';
@@ -56,23 +56,9 @@ export class PostsController {
   @Get()
   @UseGuards(GetUserFromToken)
   async getPosts(@Query() query: QueryPostDto, @Request() req) {
-    const pageNumber: number = Number(query.pageNumber) || 1;
-    const pageSize: number = Number(query.pageSize) || 10;
-    let sortBy: string = query.sortBy || 'createdAt';
-    if (sortBy === 'name') sortBy = 'blogName';
-    let sortDirection: 'ASC' | 'DESC' = 'DESC';
-    if (query.sortDirection)
-      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
-
     const userId = req.user?.id.toString() || null;
 
-    return await this.postsQueryRepository.getPosts(
-      pageNumber,
-      pageSize,
-      sortBy,
-      sortDirection,
-      userId,
-    );
+    return await this.postsQueryRepository.getPosts(query, userId);
   }
 
   @Post(':postId/comments')
