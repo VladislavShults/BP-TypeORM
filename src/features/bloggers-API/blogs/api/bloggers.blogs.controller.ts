@@ -41,7 +41,7 @@ import { QueryCommentDto } from '../../../public-API/comments/api/models/query-c
 import { BlogsQueryRepository } from '../../../public-API/blogs/api/blogs.query.repository';
 import { S3Adapter } from '../../../public-API/upload/application/s3-adapter';
 import { CommandBus } from '@nestjs/cqrs';
-import { UploadWallpaperImageAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload - wallpaper-and-save-info-in-db.usecase';
+import { UploadWallpaperImageAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload-wallpaper-and-save-info-in-db-use.case';
 import { UploadMainImageAndSaveInfoInDbCommand } from '../../../public-API/blogs/application/use-cases/upload-main-image-and-save-in-db.usecase';
 import { CheckPostInDBAndBlogOwnerGuard } from '../../../public-API/posts/guards/check-post-in-db-and-check-owner';
 import { UploadPostMainImageAndSaveInfoInDbCommand } from '../../../public-API/posts/application/use-cases/upload-post-main-image-and-save-in-db';

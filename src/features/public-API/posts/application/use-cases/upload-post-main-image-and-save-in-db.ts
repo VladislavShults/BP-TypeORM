@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { S3Adapter } from '../../../upload/application/s3-adapter';
 import sharp from 'sharp';
 import { PostMainImage } from '../../entities/post-main-image.entity';
+import { BadRequestException } from '@nestjs/common';
 
 export class UploadPostMainImageAndSaveInfoInDbCommand {
   constructor(
@@ -30,6 +31,8 @@ export class UploadPostMainImageAndSaveInfoInDbUseCase
         const height = metadata.height;
         const width = metadata.width;
         const fileSize = command.buffer.length;
+
+        if (height !== 432 || width !== 940) throw new BadRequestException();
 
         const folder = 'posts/mainImage';
 

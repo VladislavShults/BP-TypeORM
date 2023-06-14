@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { S3Adapter } from '../../../upload/application/s3-adapter';
 import sharp from 'sharp';
 import { Wallpaper } from '../../entities/wallpaper.entity';
+import { BadRequestException } from '@nestjs/common';
 
 export class UploadWallpaperImageAndSaveInfoInDbCommand {
   constructor(
@@ -13,7 +14,7 @@ export class UploadWallpaperImageAndSaveInfoInDbCommand {
 }
 
 @CommandHandler(UploadWallpaperImageAndSaveInfoInDbCommand)
-export class UploadWallpaperAndSaveInfoInDbUsecase
+export class UploadWallpaperAndSaveInfoInDbUseCase
   implements ICommandHandler<UploadWallpaperImageAndSaveInfoInDbCommand>
 {
   constructor(
@@ -31,6 +32,8 @@ export class UploadWallpaperAndSaveInfoInDbUsecase
         const height = metadata.height;
         const width = metadata.width;
         const fileSize = command.buffer.length;
+
+        if (height !== 312 || width !== 1028) throw new BadRequestException();
 
         const folder = 'blogs/wallpapers';
 
