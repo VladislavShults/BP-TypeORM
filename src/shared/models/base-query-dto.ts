@@ -2,7 +2,7 @@ import { IsIn, IsNumber, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { toNumber } from '../../features/public-API/blogs/helpers/cast.helper';
 
-export class BaseQueryDto {
+export abstract class BaseQueryDto {
   @IsIn(['ASC', 'DESC'])
   @Transform((sortDir) => sortDir.value.toUpperCase())
   sortDirection: 'ASC' | 'DESC' = 'DESC';

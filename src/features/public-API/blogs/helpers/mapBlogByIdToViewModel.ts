@@ -21,7 +21,7 @@ export const mapBlogById = (blog): ViewBlogByIdType => ({
       ? []
       : [
           {
-            url: baseUrl + blog.wallpapers.url,
+            url: baseUrl + blog.main.url,
             width: blog.main.width,
             height: blog.main.height,
             fileSize: blog.main.fileSize,
@@ -53,7 +53,7 @@ export const mapBlogByIdWithUserId = (
       ? []
       : [
           {
-            url: baseUrl + blog.wallpapers.url,
+            url: baseUrl + blog.main.url,
             width: blog.main.width,
             height: blog.main.height,
             fileSize: blog.main.fileSize,

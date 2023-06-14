@@ -46,14 +46,10 @@ export class BlogsQueryRepository {
     query: QueryBlogDto,
     userId?: string,
   ): Promise<ViewBlogsTypeWithPagination> {
-    const searchNameTerm: string = query.searchNameTerm || '';
-    const pageNumber: number = Number(query.pageNumber) || 1;
-    const pageSize: number = Number(query.pageSize) || 10;
-    let sortBy: string = query.sortBy || 'createdAt';
+    let { sortBy } = query;
+    const { searchNameTerm, sortDirection, pageSize, pageNumber } = query;
+
     if (sortBy === 'name') sortBy = 'blogName';
-    let sortDirection: 'ASC' | 'DESC' = 'DESC';
-    if (query.sortDirection)
-      sortDirection = query.sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
     let stringWhere =
       'b."isBanned" = false AND b."isDeleted" = false AND LOWER(b."blogName") like :searchName';
