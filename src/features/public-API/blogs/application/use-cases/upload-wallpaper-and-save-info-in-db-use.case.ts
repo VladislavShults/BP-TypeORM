@@ -4,6 +4,7 @@ import { S3Adapter } from '../../../upload/application/s3-adapter';
 import sharp from 'sharp';
 import { Wallpaper } from '../../entities/wallpaper.entity';
 import { BadRequestException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 
 export class UploadWallpaperImageAndSaveInfoInDbCommand {
   constructor(
@@ -46,7 +47,7 @@ export class UploadWallpaperAndSaveInfoInDbUseCase
 
         const newWallpaper = new Wallpaper();
 
-        newWallpaper.id = saveAndGetInfoAboutImage.id.slice(1, -1);
+        newWallpaper.id = randomUUID();
         newWallpaper.url = saveAndGetInfoAboutImage.url;
         newWallpaper.width = width;
         newWallpaper.height = height;

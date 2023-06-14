@@ -4,6 +4,7 @@ import { S3Adapter } from '../../../upload/application/s3-adapter';
 import sharp from 'sharp';
 import { PostMainImage } from '../../entities/post-main-image.entity';
 import { BadRequestException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 
 export class UploadPostMainImageAndSaveInfoInDbCommand {
   constructor(
@@ -45,7 +46,7 @@ export class UploadPostMainImageAndSaveInfoInDbUseCase
 
         const newMainImage = new PostMainImage();
 
-        newMainImage.id = saveAndGetInfoAboutImage.id.slice(1, -1);
+        newMainImage.id = randomUUID();
         newMainImage.url = saveAndGetInfoAboutImage.url;
         newMainImage.width = width;
         newMainImage.height = height;

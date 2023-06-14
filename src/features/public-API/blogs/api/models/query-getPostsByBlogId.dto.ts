@@ -5,4 +5,9 @@ export class QueryGetPostsByBlogIdDto extends BaseQueryDto {
   @IsNotEmpty()
   @IsString()
   sortBy = 'createdAt';
+
+  constructor() {
+    super();
+    this.sortDirection = 'ASC';
+  }
 }

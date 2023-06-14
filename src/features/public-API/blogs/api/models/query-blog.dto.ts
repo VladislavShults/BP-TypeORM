@@ -8,4 +8,9 @@ export class QueryBlogDto extends BaseQueryDto {
   @IsNotEmpty()
   @IsString()
   sortBy = 'createdAt';
+
+  constructor() {
+    super();
+    this.sortDirection = 'ASC';
+  }
 }
