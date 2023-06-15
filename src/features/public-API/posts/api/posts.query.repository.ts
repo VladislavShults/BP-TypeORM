@@ -34,15 +34,13 @@ export class PostsQueryRepository {
         postId,
       });
 
-    this.checkUserIdAndGetHisStatus(queryBuilder, userId);
+    PostsQueryRepository.checkUserIdAndGetHisStatus(queryBuilder, userId);
 
     const postDBType = await queryBuilder.getRawOne();
 
     if (!postDBType) return null;
 
-    const post = mapPost(postDBType);
-
-    return post;
+    return mapPost(postDBType);
   }
 
   async getPosts(
@@ -59,7 +57,7 @@ export class PostsQueryRepository {
       .skip((pageNumber - 1) * pageSize)
       .take(pageSize);
 
-    this.checkUserIdAndGetHisStatus(queryBuilder, userId);
+    PostsQueryRepository.checkUserIdAndGetHisStatus(queryBuilder, userId);
 
     const postDBType = await queryBuilder.getRawMany();
     const totalCount = Number(await queryBuilder.getCount());
@@ -97,7 +95,7 @@ export class PostsQueryRepository {
       .skip((pageNumber - 1) * pageSize)
       .take(pageSize);
 
-    this.checkUserIdAndGetHisStatus(queryBuilder, userId);
+    PostsQueryRepository.checkUserIdAndGetHisStatus(queryBuilder, userId);
 
     const itemsDBType = await queryBuilder.getRawMany();
     const count = await queryBuilder.getCount();
@@ -116,21 +114,15 @@ export class PostsQueryRepository {
   }
 
   async getPostByIdWithUserId(postId: string): Promise<Post> {
-    const post = await this.dataSource
-      .getRepository(Post)
-      .find({ where: { id: postId } });
-
-    return post[0];
+    return this.postsRepo.findOne({ where: { id: postId } });
   }
 
   async getMainImageForPost(postId: number) {
     const postInfo = await this.postsMainImageRepo.find({
       where: { postId: postId },
     });
-    // const result = mapPostMainImageDbToView(postInfo);
-    const result = postInfo.map((i) => mapPostMainImageDbToView(i));
 
-    return result;
+    return postInfo.map((i) => mapPostMainImageDbToView(i));
   }
 
   private queryRunner() {
@@ -158,7 +150,7 @@ export class PostsQueryRepository {
       .leftJoin('p.main', 'm', 'm.width = 940')
       .leftJoin('p.postLikeOrDislike', 'likes', 'likes.status = :like')
       .leftJoin('p.postLikeOrDislike', 'dislikes', 'dislikes.status = :dislike')
-      .groupBy('p.id, b.id, m.id, my.status')
+      .groupBy('p.id, b.id, m.id')
       .where('p.isDeleted = :isDeleted')
       .setParameters({
         isDeleted: false,
@@ -167,7 +159,7 @@ export class PostsQueryRepository {
       });
   }
 
-  private checkUserIdAndGetHisStatus(queryBuilder, userId) {
+  private static checkUserIdAndGetHisStatus(queryBuilder, userId) {
     if (userId) {
       queryBuilder
         .addSelect(`my.status AS "myStatus"`)
