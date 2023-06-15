@@ -35,26 +35,74 @@ export class UploadPostMainImageAndSaveInfoInDbUseCase
 
         if (height !== 432 || width !== 940) throw new BadRequestException();
 
-        const folder = 'posts/mainImage';
+        const bufferMedSize = await sharp(command.buffer)
+          .resize(300, 180)
+          .toBuffer();
+        const bufferSmallSize = await sharp(command.buffer)
+          .resize(149, 96)
+          .toBuffer();
 
-        const saveAndGetInfoAboutImage = await this.uploadService.uploadImage(
-          command.filename,
-          command.buffer,
-          command.postId,
-          folder,
+        const folderOriginSize = 'posts/mainImage/origin';
+        const folderMedSize = 'posts/mainImage/medium';
+        const folderSmallSize = 'posts/mainImage/small';
+
+        const saveAndGetInfoAboutOriginImage =
+          await this.uploadService.uploadImage(
+            command.filename,
+            command.buffer,
+            command.postId,
+            folderOriginSize,
+          );
+
+        const saveAndGetInfoAboutMedImage =
+          await this.uploadService.uploadImage(
+            command.filename,
+            bufferMedSize,
+            command.postId,
+            folderMedSize,
+          );
+
+        const saveAndGetInfoAboutSmallImage =
+          await this.uploadService.uploadImage(
+            command.filename,
+            bufferSmallSize,
+            command.postId,
+            folderSmallSize,
+          );
+
+        const newMainOriginImage = new PostMainImage(
+          randomUUID(),
+          saveAndGetInfoAboutOriginImage.url,
+          width,
+          height,
+          fileSize,
+          Number(command.postId),
+          new Date(),
+        );
+        const newMainMedImage = new PostMainImage(
+          randomUUID(),
+          saveAndGetInfoAboutMedImage.url,
+          300,
+          180,
+          bufferMedSize.length,
+          Number(command.postId),
+          new Date(),
+        );
+        const newMainSmallImage = new PostMainImage(
+          randomUUID(),
+          saveAndGetInfoAboutSmallImage.url,
+          149,
+          96,
+          bufferSmallSize.length,
+          Number(command.postId),
+          new Date(),
         );
 
-        const newMainImage = new PostMainImage();
-
-        newMainImage.id = randomUUID();
-        newMainImage.url = saveAndGetInfoAboutImage.url;
-        newMainImage.width = width;
-        newMainImage.height = height;
-        newMainImage.fileSize = fileSize;
-        newMainImage.postId = Number(command.postId);
-        newMainImage.createdAt = new Date();
-
-        await transactionalEntityManager.save(newMainImage);
+        await transactionalEntityManager.save([
+          newMainOriginImage,
+          newMainMedImage,
+          newMainSmallImage,
+        ]);
       },
     );
   }

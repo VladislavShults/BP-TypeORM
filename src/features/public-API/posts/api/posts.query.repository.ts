@@ -17,6 +17,8 @@ export class PostsQueryRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Post) private postsRepo: Repository<Post>,
+    @InjectRepository(PostMainImage)
+    private postsMainImageRepo: Repository<PostMainImage>,
   ) {}
 
   async getPostById(
@@ -122,11 +124,11 @@ export class PostsQueryRepository {
   }
 
   async getMainImageForPost(postId: number) {
-    const postInfo = await this.dataSource
-      .getRepository(PostMainImage)
-      .find({ where: { postId: postId } });
-
-    const result = mapPostMainImageDbToView(postInfo[0]);
+    const postInfo = await this.postsMainImageRepo.find({
+      where: { postId: postId },
+    });
+    // const result = mapPostMainImageDbToView(postInfo);
+    const result = postInfo.map((i) => mapPostMainImageDbToView(i));
 
     return result;
   }

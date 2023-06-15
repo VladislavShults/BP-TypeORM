@@ -22,16 +22,17 @@ export const mapPost = (post): ViewPostType => {
       newestLikes,
     },
     images: {
-      main: !post.url
-        ? []
-        : [
-            {
-              url: post.url,
-              width: post.width,
-              height: post.height,
-              fileSize: post.fileSize,
-            },
-          ],
+      main: undefined,
+      // main: !post.url
+      //   ? []
+      //   : [
+      //       {
+      //         url: post.url,
+      //         width: post.width,
+      //         height: post.height,
+      //         fileSize: post.fileSize,
+      //       },
+      //     ],
     },
   };
 };

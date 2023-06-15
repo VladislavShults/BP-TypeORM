@@ -4,7 +4,6 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../../SA-API/users/entities/user.entity';
@@ -52,7 +51,7 @@ export class Post {
   @Column({ type: 'jsonb' })
   newestLikes: object[];
 
-  @OneToOne(() => PostMainImage, (p) => p.post)
+  @OneToMany(() => PostMainImage, (p) => p.post)
   main: PostMainImage;
 
   @OneToMany(() => PostsLikesOrDislike, (p) => p.post)
