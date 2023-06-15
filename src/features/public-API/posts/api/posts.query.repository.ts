@@ -137,6 +137,7 @@ export class PostsQueryRepository {
     return this.dataSource
       .getRepository(Post)
       .createQueryBuilder('p')
+      .distinct(true)
       .select([
         'p.id as "id"',
         'p.title as "title"',
@@ -154,10 +155,10 @@ export class PostsQueryRepository {
         `COUNT(dislikes.id) AS "dislikesCount"`,
       ])
       .leftJoin('p.blog', 'b')
-      .leftJoin('p.main', 'm')
+      .leftJoin('p.main', 'm', 'm.width = 940')
       .leftJoin('p.postLikeOrDislike', 'likes', 'likes.status = :like')
       .leftJoin('p.postLikeOrDislike', 'dislikes', 'dislikes.status = :dislike')
-      .groupBy('p.id, b.id, m.id')
+      .groupBy('p.id, b.id, m.id, my.status')
       .where('p.isDeleted = :isDeleted')
       .setParameters({
         isDeleted: false,
